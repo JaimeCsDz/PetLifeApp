@@ -10,11 +10,66 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import { TextInput, Text, Button } from "react-native-paper";
+import { TextInput, Text, Button, HelperText } from "react-native-paper";
+import { useState } from "react";
 
 interface Props extends StackScreenProps<RootStackParams, "SignUpScreen"> {}
 
 export const SignUpScreen = ({ navigation }: Props) => {
+  const [name, setName] = useState<string>("");
+  const [surnameP, setsurnameP] = useState<string>("");
+  const [surnameM, setsurnameM] = useState<string>("");
+  const [nameError, setNameError] = useState<boolean>(false);
+  const [surnamePError, setsurnamePError] = useState<boolean>(false);
+  const [surnameMError, setsurnameMError] = useState<boolean>(false);
+  const [isNameTouched, setIsNameTouched] = useState<boolean>(false);
+  const [issurnamePTouched, setIssurnamePTouched] = useState<boolean>(false);
+  const [issurnameMTouched, setIssurnameMTouched] = useState<boolean>(false);
+
+  /* Funcion de validacion de nombre */
+  const validateName = (name: string) => {
+    const NameRegex = /^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/;
+    return NameRegex.test(name);
+  };
+
+  const onChangeName = (name: string) => {
+    setName(name);
+    if (isNameTouched) {
+      setNameError(!validateName(name));
+    }
+  };
+
+  const onChangesurnameP = (surnameP: string) => {
+    setsurnameP(surnameP);
+    if (issurnamePTouched) {
+      setsurnamePError(!validateName(surnameP));
+    }
+  };
+
+  const onChangesurnameM = (surnameM: string) => {
+    setsurnameM(surnameM);
+    if (issurnameMTouched) {
+      setsurnameMError(!validateName(surnameM));
+    }
+  };
+
+  const handleName = () => {
+    setIsNameTouched(true);
+    setNameError(!validateName(name));
+  };
+
+  const handlesurnameP = () => {
+    setIssurnamePTouched(true);
+    setsurnamePError(!validateName(surnameP));
+  };
+
+  const handlesurnameM = () => {
+    setIssurnameMTouched(true);
+    setsurnameMError(!validateName(surnameM));
+  };
+
+  const isFormValid = name && surnameP && surnameM && !nameError && !surnamePError && !surnameMError;
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -42,7 +97,17 @@ export const SignUpScreen = ({ navigation }: Props) => {
               placeholderTextColor={"#C4C4C4"}
               left={<TextInput.Icon icon="account" color={'#C4C4C4'}/>}
               style={styles.input}
+              value={name}
+              onBlur={handleName}
+              onChangeText={onChangeName}
+              error={nameError && isNameTouched}
             />
+
+            {nameError && isNameTouched ? (
+              <HelperText type="error">
+                El Nombre no es valido.
+              </HelperText>
+            ) : null}
 
             <TextInput
               label="Apellido paterno"
@@ -53,7 +118,17 @@ export const SignUpScreen = ({ navigation }: Props) => {
               placeholderTextColor={"#C4C4C4"}
               left={<TextInput.Icon icon="account-tie" color={'#C4C4C4'}/>}
               style={styles.input}
+              value={surnameP}
+              onBlur={handlesurnameP}
+              onChangeText={onChangesurnameP}
+              error={surnamePError && issurnamePTouched}
             />
+
+            {surnamePError && issurnamePTouched ? (
+              <HelperText type="error">
+                El Apellido Paterno no es valido.
+              </HelperText>
+            ) : null}
 
           <TextInput
               label="Apellido materno"
@@ -64,12 +139,20 @@ export const SignUpScreen = ({ navigation }: Props) => {
               placeholderTextColor={"#C4C4C4"}
               left={<TextInput.Icon icon="account-star-outline" color={'#C4C4C4'}/>}
               style={styles.input}
+              value={surnameM}
+              onBlur={handlesurnameM}
+              onChangeText={onChangesurnameM}
+              error={surnameMError && issurnameMTouched}
             />
 
-            
-            
+            {surnameMError && issurnameMTouched ? (
+              <HelperText type="error">
+                El Apellido Materno no es valido.
+              </HelperText>
+            ) : null}
+          
 
-            <Button mode="outlined" style={styles.registerButton} textColor="#00635D" onPress={()=>navigation.navigate('CodigoPostal')}>
+            <Button mode="outlined" style={styles.registerButton} textColor="#00635D" onPress={()=>navigation.navigate('CodigoPostal')} disabled={!isFormValid}>
               Siguiente
             </Button>
 
