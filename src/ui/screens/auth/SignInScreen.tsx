@@ -5,10 +5,12 @@ import { Text, TextInput, Button } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { Icon } from 'react-native-paper';
+import { useState } from "react";
 
 interface Props extends StackScreenProps<RootStackParams, "SignInScreen"> { }
 
 export const SignInScreen = ({ navigation }: Props) => {
+    const [hidePass, setHidePass] = useState<boolean>(true);
     return (
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView
@@ -40,7 +42,7 @@ export const SignInScreen = ({ navigation }: Props) => {
                         <TextInput
                             label="Contraseña"
                             mode="outlined"
-                            secureTextEntry
+                            secureTextEntry={hidePass}
                             placeholder="********"
                             placeholderTextColor={"#C4C4C4"}
                             outlineColor="#C4C4C4"
@@ -48,19 +50,25 @@ export const SignInScreen = ({ navigation }: Props) => {
                             left={<TextInput.Icon icon="lock" />}
                             style={styles.input}
                             textColor="#C4C4C4"
+                            right={
+                                    <TextInput.Icon
+                                    icon={hidePass ? "eye-outline" : "eye-off-outline"}
+                                    onPress={() => setHidePass(!hidePass)}
+                                    />
+                                }
                         />
-
-                        <TouchableOpacity>
-                            <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-                        </TouchableOpacity>
 
                         <Button mode="contained" style={styles.loginButton}>
                             Iniciar sesión
                         </Button>
 
+                        <TouchableOpacity>
+                            <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+                        </TouchableOpacity>
+
                         <View style={styles.registerContainer}>
                             <Text>¿No tienes una cuenta? </Text>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={()=> navigation.navigate('SignUpScreen')}>
                                 <Text style={styles.registerText}>Regístrate</Text>
                             </TouchableOpacity>
                         </View>
@@ -124,14 +132,14 @@ const styles = StyleSheet.create({
     },
     forgotPasswordText: {
         color: "#2F76E1",
-        textAlign: "right",
-        marginBottom: 20,
+        marginTop: 20,
     },
     loginButton: {
         backgroundColor: "#004E49",
         paddingVertical: 5,
         borderRadius: 30,
         width: '100%',
+        marginTop: 10
     },
     registerContainer: {
         flexDirection: "row",

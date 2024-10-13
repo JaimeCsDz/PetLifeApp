@@ -12,6 +12,7 @@ interface Props extends StackScreenProps<RootStackParams, "InicioScreen"> { }
 export const InicioScreen = ({navigation}: Props) => {
 
     const onSignIn = () => navigation.navigate("SignInScreen")
+    const onSignUp = () => navigation.navigate("SignUpScreen")
 
     return (
         <SafeAreaView style={styles.container}>
@@ -28,7 +29,7 @@ export const InicioScreen = ({navigation}: Props) => {
                 </View>
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity onPress={onSignIn}><Button mode="contained" style={styles.button}>Iniciar Sesión</Button></TouchableOpacity>
-                    <TouchableOpacity><Button mode="outlined" style={[styles.button, styles.outlinedButton]} textColor="#00635D">Registrarse</Button></TouchableOpacity>
+                    <TouchableOpacity onPress={onSignUp}><Button mode="outlined" style={[styles.button, styles.outlinedButton]} textColor="#00635D">Registrarse</Button></TouchableOpacity>
                 </View>
             </View>
         </ImageBackground>

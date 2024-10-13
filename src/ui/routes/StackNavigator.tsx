@@ -8,6 +8,7 @@ import { ProfileScreen } from '../screens/perfil/ProfileScreen';
 import { ResourceScreen } from '../screens/recursos/ResourceScreen';
 import { MapsScreen } from '../screens/maps/MapsScreen';
 import { Citas } from '../screens/citas/Citas';
+import { CodigoPostal } from '../screens/auth/CodigoPostalScreen';
 
 export type RootStackParams = {
     LoadingScreen: undefined;
@@ -17,8 +18,9 @@ export type RootStackParams = {
     ProfileScreen: undefined;
     ResourceScreen: undefined;
     MapsScreen: undefined;
-    Citas: undefined
-    HomeScreen: undefined
+    Citas: undefined;
+    HomeScreen: undefined;
+    CodigoPostal: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParams>();
@@ -41,6 +43,7 @@ export const StackNavigator = () => {
         <Stack.Screen name="ResourceScreen" component={ResourceScreen} />
         <Stack.Screen name="Citas" component={Citas} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="CodigoPostal" component={CodigoPostal} />
 
         </Stack.Navigator>
     );
