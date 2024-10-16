@@ -17,6 +17,8 @@ import { useState } from "react";
 interface Props extends StackScreenProps<RootStackParams, "CodigoPostal"> {}
 
 export const CodigoPostal = ({ navigation }: Props) => {
+  const [hidePass, setHidePass] = useState<boolean>(true);
+
   const [selectedGender, setSelectedGender] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<boolean>(false);
@@ -126,20 +128,24 @@ export const CodigoPostal = ({ navigation }: Props) => {
               </HelperText>
             ) : null}
 
-            <TextInput
-              label="Contraseña"
-              mode="outlined"
-              outlineColor="#C4C4C4"
-              activeOutlineColor="#037972"
-              placeholder="Ex. ********"
-              placeholderTextColor={"#C4C4C4"}
-              left={<TextInput.Icon icon="lock" color={"#C4C4C4"} />}
-              style={styles.input}
-              value={password}
-              onChangeText={onChangePassword}
-              onBlur={handlePassword}
-              error={PasswordError && isPasswordTouched}
-            />
+              <TextInput
+                label="Contraseña"
+                mode="outlined"
+                secureTextEntry={hidePass}
+                placeholder="********"
+                placeholderTextColor={"#C4C4C4"}
+                outlineColor="#C4C4C4"
+                activeOutlineColor="#C4C4C4"
+                left={<TextInput.Icon icon="lock" />}
+                style={styles.input}
+                textColor="#C4C4C4"
+                right={
+                  <TextInput.Icon
+                    icon={hidePass ? "eye-outline" : "eye-off-outline"}
+                    onPress={() => setHidePass(!hidePass)}
+                />
+                }
+                />
 
             {PasswordError && isPasswordTouched ? (
               <HelperText type="error">

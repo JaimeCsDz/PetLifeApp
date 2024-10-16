@@ -15,7 +15,6 @@ const lightTheme: ThemeProp = {
         onPrimaryContainer: "rgb(0, 26, 65)",
         secondary: "rgb(0, 100, 149)",
         onSecondary: "rgb(255, 255, 255)",
-        secondaryContainer: "rgb(203, 230, 255)",
         onSecondaryContainer: "rgb(0, 30, 48)",
         tertiary: "rgb(120, 89, 0)",
         onTertiary: "rgb(255, 255, 255)",

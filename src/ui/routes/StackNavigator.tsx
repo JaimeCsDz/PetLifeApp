@@ -4,23 +4,18 @@ import { LoadingScreen } from "../screens/loading/LoadingScreen";
 import { SignInScreen } from "../screens/auth/SignInScreen";
 import { SignUpScreen } from "../screens/auth/SignUpScreen";
 import { InicioScreen } from '../screens/inicio/InicioScreen';
-import { ProfileScreen } from '../screens/perfil/ProfileScreen';
-import { ResourceScreen } from '../screens/recursos/ResourceScreen';
-import { MapsScreen } from '../screens/maps/MapsScreen';
-import { Citas } from '../screens/citas/Citas';
 import { CodigoPostal } from '../screens/auth/CodigoPostalScreen';
+import { FormCitasScreen } from '../screens/citas/FormCitasScreen';
+import { Citas } from '../screens/citas/Citas';
 
 export type RootStackParams = {
     LoadingScreen: undefined;
     SignInScreen: undefined;
     SignUpScreen: undefined;
     InicioScreen: undefined;
-    ProfileScreen: undefined;
-    ResourceScreen: undefined;
-    MapsScreen: undefined;
-    Citas: undefined;
     HomeScreen: undefined;
     CodigoPostal: undefined;
+    FormCitasScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParams>();
@@ -28,7 +23,7 @@ const Stack = createNativeStackNavigator<RootStackParams>();
 export const StackNavigator = () => {
     return (
         <Stack.Navigator
-        initialRouteName="InicioScreen"
+        initialRouteName="HomeScreen"
         screenOptions={{ headerShown: false }}
         >
         <Stack.Screen
@@ -39,11 +34,9 @@ export const StackNavigator = () => {
         <Stack.Screen name="InicioScreen" component={InicioScreen} />
         <Stack.Screen name="SignInScreen" component={SignInScreen} />
         <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-        <Stack.Screen name="ResourceScreen" component={ResourceScreen} />
-        <Stack.Screen name="Citas" component={Citas} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="CodigoPostal" component={CodigoPostal} />
+        <Stack.Screen name="FormCitasScreen" component={FormCitasScreen} />
 
         </Stack.Navigator>
     );

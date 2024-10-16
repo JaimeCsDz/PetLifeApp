@@ -137,7 +137,7 @@ export const SignInScreen = ({ navigation }: Props) => {
               </HelperText>
             ) : null}
 
-            <Button mode="contained" style={styles.loginButton} disabled={!isFormValid}>
+            <Button mode="contained" style={styles.loginButton} disabled={!isFormValid} onPress={()=> navigation.navigate('HomeScreen')}>
               Iniciar sesión
             </Button>
 
