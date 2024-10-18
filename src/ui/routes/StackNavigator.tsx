@@ -6,7 +6,6 @@ import { SignUpScreen } from "../screens/auth/SignUpScreen";
 import { InicioScreen } from '../screens/inicio/InicioScreen';
 import { CodigoPostal } from '../screens/auth/CodigoPostalScreen';
 import { FormCitasScreen } from '../screens/citas/FormCitasScreen';
-import { Citas } from '../screens/citas/Citas';
 
 export type RootStackParams = {
     LoadingScreen: undefined;
@@ -36,7 +35,7 @@ export const StackNavigator = () => {
         <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="CodigoPostal" component={CodigoPostal} />
-        <Stack.Screen name="FormCitasScreen" component={FormCitasScreen} />
+        <Stack.Screen name="FormCitasScreen" component={FormCitasScreen}/>
 
         </Stack.Navigator>
     );

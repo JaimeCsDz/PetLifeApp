@@ -7,18 +7,18 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { VacunasScreen } from "./VacunasScreen";
 import { TrofeosScreen } from "./TrofeosScreen";
+import { useNavigation } from "@react-navigation/native";
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
 
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
-
+    const navigation = useNavigation()
     return (
         <>
         <SafeAreaView style={styles.safeArea}>
             <Appbar.Header>
-                <Appbar.BackAction onPress={() => {}} color="#00635D"/>
                 <Appbar.Content
                 title="Perfil"
                 style={styles.appbarContent}
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     },
     appbarContent: {
         alignItems: "center", 
-        marginRight: 55
+        marginRight: 30
     },
     titulo: {
         fontWeight: "bold",

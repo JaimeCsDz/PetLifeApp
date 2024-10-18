@@ -7,13 +7,13 @@ import { StackNavigator } from './src/ui/routes/StackNavigator';
 import { useColorScheme } from 'react-native';
 import { lightTheme, darkTheme } from './src/ui/constants/Colors';
 import * as Font from 'expo-font';
-import { LoadingScreen } from './src/ui/screens/loading/LoadingScreen';  // Importa tu pantalla de carga
+import { LoadingScreen } from './src/ui/screens/loading/LoadingScreen';
 
 export default function App() {
   const scheme = useColorScheme();
   const theme = scheme === 'dark' ? darkTheme : lightTheme;
   
-  const [isLoading, setIsLoading] = useState(true); // Estado para controlar la carga
+  const [isLoading, setIsLoading] = useState(true);
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   const loadFonts = async () => {
@@ -29,7 +29,7 @@ export default function App() {
     loadFonts().then(() => {
       setTimeout(() => {
         setIsLoading(false);
-      }, 2000); // 3 segundos de retraso
+      }, 2000);
     });
   }, []);
 
@@ -38,12 +38,12 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}> 
+    <PaperProvider theme={theme}>
       <NavigationContainer>
-        <PaperProvider theme={theme}>
-          <StackNavigator />
-        </PaperProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}> 
+            <StackNavigator />
+        </GestureHandlerRootView>
       </NavigationContainer>
-    </GestureHandlerRootView>
+    </PaperProvider>
   );
 }
