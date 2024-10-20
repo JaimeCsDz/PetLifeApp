@@ -1,20 +1,31 @@
 import React, { useState } from "react";
-import { SafeAreaView, View, FlatList, StyleSheet, Image } from "react-native";
+import { SafeAreaView, View, FlatList, StyleSheet, Image, NativeSyntheticEvent, NativeScrollEvent, Platform, StatusBar } from "react-native";
 import { Button, Text, Card, Avatar } from 'react-native-paper';
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { AnimatedFAB } from 'react-native-paper';
+import { RootStackParams } from "../../routes/StackNavigator";
 
-export const Citas = () => {
-    const navigation = useNavigation();
+export const Citas = ({ visible }: any) => {
+    const navigation = useNavigation<NavigationProp<RootStackParams>>();
 
-    // const [citas, setCitas] = useState([])
+    const [isExtended, setIsExtended] = useState(true);
+
+    // Simulación de citas
     const [citas, setCitas] = useState([
         { id: '1', motivo: 'Chequeo general', mascota: 'Fibby', lugar: 'Cancún, Quintana Roo', fecha: '17/02/2010 - 02:20 PM', veterinaria: 'Veterinaria Santa Fe', estado: 'Pendiente', imagen: require("../../../assets/gato.png") },
-        { id: '2', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") }
+        { id: '2', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
+        { id: '3', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
+        { id: '4', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
+        { id: '5', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
+        { id: '6', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
+        { id: '7', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
+        { id: '8', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
     ]);
 
+    // Renderizar citas
     const renderCita = ({ item }: any) => (
-        <SafeAreaView style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+        <SafeAreaView style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
             <Card style={styles.card}>
                 <View style={styles.cardContent}>
                     <View style={styles.cardLeft}>
@@ -42,43 +53,60 @@ export const Citas = () => {
                     </View>
                 </View>
                 <Card.Actions style={styles.cardActions}>
-                    <Button mode="text" onPress={() => {}}>Detalles</Button>
+                    <Button mode="text" onPress={() => { }}>Detalles</Button>
                 </Card.Actions>
             </Card>
         </SafeAreaView>
     );
 
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const currentOffset = event.nativeEvent.contentOffset.y;
+        const isScrollingDown = currentOffset > 10;
+        setIsExtended(!isScrollingDown);
+    };
+
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            {citas.length === 0 ? (
-                <View style={styles.container}>
-                    <Image
-                        source={require("../../../assets/dog-gum.png")}
-                        style={styles.image}
-                    />
-                    <Text style={styles.text}>Parece que no tienes citas disponibles</Text>
-                    <Button
-                        mode="contained"
-                        style={styles.button}
-                        onPress={() => navigation.navigate("FormCitasScreen")}
-                    >
-                        Agregar cita
-                    </Button>
-                </View>
-            ) : (
-                <SafeAreaView>
-                    <Text>S</Text>
-                    <View>
-                        <FlatList
-                            data={citas}
-                            renderItem={renderCita}
-                            keyExtractor={(item:any) => item.id}
-                            ListHeaderComponent={<Text style={styles.header}>Historial de citas médicas</Text>}
+        <>
+            <SafeAreaView style={{ flex: 1,  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
+                {citas.length === 0 ? (
+                    <View style={styles.container}>
+                        <Image
+                            source={require("../../../assets/dog-gum.png")}
+                            style={styles.image}
                         />
+                        <Text style={styles.text}>Parece que no tienes citas disponibles</Text>
+                        <Button
+                            mode="contained"
+                            style={styles.button}
+                            onPress={() => navigation.navigate("FormCitasScreen")}
+                        >
+                            Agregar cita
+                        </Button>
                     </View>
-                </SafeAreaView>
-            )}
-        </SafeAreaView>
+                ) : (
+                    <FlatList
+                        data={citas}
+                        renderItem={renderCita}
+                        keyExtractor={(item: any) => item.id}
+                        ListHeaderComponent={<Text style={styles.header}>Historial de citas médicas</Text>}
+                        onScroll={handleScroll} 
+                        scrollEventThrottle={16}
+                    />
+                )}
+            </SafeAreaView>
+            <AnimatedFAB
+                icon={'plus'}
+                label={'Agregar cita'}
+                color="#fff"
+                extended={isExtended}
+                onPress={() => navigation.navigate("FormCitasScreen")}
+                visible={visible}
+                animateFrom={'right'}
+                iconMode={'dynamic'}
+                
+                style={styles.fabStyle}
+            />
+        </>
     );
 };
 
@@ -173,5 +201,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 10,
-    }
+    },
+    fabStyle: {
+        backgroundColor: '#037972',
+        position: 'absolute',
+        right: 16,
+        bottom: 16,
+    },
 });

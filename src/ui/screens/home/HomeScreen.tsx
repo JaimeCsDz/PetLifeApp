@@ -20,7 +20,7 @@ export const HomeScreen = () => {
   const [routes] = useState([
     { key: "dashboard", title: "Home", focusedIcon: "home-outline" as const, unfocusedIcon: "home-outline" as const },
     { key: "cita", title: "Citas", focusedIcon: "paw-outline" as const, unfocusedIcon: "paw-outline" as const },
-    { key: "mapa", title: "", focusedIcon: "map-marker" as const, unfocusedIcon: "map-marker-outline" as const },
+    // { key: "mapa", title: "", focusedIcon: "map-marker" as const, unfocusedIcon: "map-marker-outline" as const },
     { key: "perfil", title: "Perfil", focusedIcon: "account-outline" as const, unfocusedIcon: "account-outline" as const },
     { key: "recursos", title: "Recursos", focusedIcon: "phone-plus-outline" as const, unfocusedIcon: "phone-plus-outline" as const },
   ]);

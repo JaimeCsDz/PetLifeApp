@@ -1,29 +1,66 @@
-import { ScrollView } from "react-native-gesture-handler";
-import { SafeAreaView, View } from "react-native";
-import { Appbar, Card, Text, Button, Portal, Modal } from "react-native-paper";
-import { Image } from "react-native";
-import { StyleSheet } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useState } from "react";
-import { VacunasScreen } from "./VacunasScreen";
-import { TrofeosScreen } from "./TrofeosScreen";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState } from 'react';
+import { ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaView, View } from 'react-native';
+import { Appbar, Card, Text, Button, Menu, Divider } from 'react-native-paper';
+import { Image, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { VacunasScreen } from './VacunasScreen';
+import { TrofeosScreen } from './TrofeosScreen';
+import { VacunaModal } from './VacunasModal'; 
+import { useNavigation } from '@react-navigation/native';
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
+    const [menuVisible, setMenuVisible] = useState(false);
 
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
-    const navigation = useNavigation()
+    const openMenu = () => setMenuVisible(true);
+    const closeMenu = () => setMenuVisible(false);
+
+    const handlePerfil = () => {
+        console.log('Cambiar de perfil');
+        closeMenu();
+    };
+
+    const handleCerrarSesion = () => {
+        console.log('Cerrar sesión');
+        closeMenu();
+    };
+
     return (
-        <>
         <SafeAreaView style={styles.safeArea}>
             <Appbar.Header>
-                <Appbar.Content
-                title="Perfil"
-                style={styles.appbarContent}
-                titleStyle={styles.titulo}
-                />
+                <Appbar.Content title="Perfil" style={styles.appbarContent} titleStyle={styles.titulo} />
+                <Menu
+                    visible={menuVisible}
+                    onDismiss={closeMenu}
+                    contentStyle={styles.menuStyle}
+                    anchor={
+                        <Appbar.Action icon="dots-vertical" onPress={openMenu} color="#00635D" />
+                    }
+                >
+                    <Menu.Item
+                        onPress={handlePerfil}
+                        title="Agregar mascota"
+                        leadingIcon={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" />}
+                        titleStyle={styles.menuItemText}
+                    />
+                    <Divider style={styles.divider} />
+                    <Menu.Item
+                        onPress={handlePerfil}
+                        title="Cambiar de perfil"
+                        leadingIcon={() => <MaterialCommunityIcons name="account-switch" size={20} color="#fff" />}
+                        titleStyle={styles.menuItemText}
+                    />
+                    <Divider style={styles.divider} />
+                    <Menu.Item
+                        onPress={handleCerrarSesion}
+                        title="Cerrar sesión"
+                        leadingIcon={() => <MaterialCommunityIcons name="logout" size={20} color="#fff" />}
+                        titleStyle={styles.menuItemText}
+                    />
+                </Menu>
             </Appbar.Header>
 
             <ScrollView contentContainerStyle={styles.scrollView}>
@@ -51,9 +88,11 @@ export const ProfileScreen = () => {
                 </Card>
                 <View style={styles.contenedor}>
                     <Text style={styles.vacunasText}>
-                        Control de vacunas <MaterialCommunityIcons name="needle" size={17} color="#757575"/>
+                        Control de vacunas <MaterialCommunityIcons name="needle" size={17} color="#757575" />
                     </Text>
-                    <Button style={styles.boton} mode="contained" labelStyle={styles.text} onPress={showModal}>Agregar vacuna</Button>
+                    <Button style={styles.boton} mode="contained" labelStyle={styles.text} onPress={showModal}>
+                        Agregar vacuna
+                    </Button>
                 </View>
                 <View style={styles.vacunas}>
                     <VacunasScreen />
@@ -63,18 +102,8 @@ export const ProfileScreen = () => {
                 </View>
             </ScrollView>
 
-            {/* Modal para agregar vacuna */}
-            <Portal>
-                <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>Agregar vacuna</Text>
-                    <View style={styles.botones}>
-                        <Button onPress={hideModal} style={styles.closeButton} textColor="#ffffff">Cerrar</Button>
-                        <Button onPress={hideModal} style={styles.closeButton} textColor="#ffffff">Guardar</Button>
-                    </View>
-                </Modal>
-            </Portal>
+            <VacunaModal visible={visible} onDismiss={hideModal} />
         </SafeAreaView>
-        </>
     );
 };
 
@@ -85,12 +114,13 @@ const styles = StyleSheet.create({
     },
     appbarContent: {
         alignItems: "center", 
-        marginRight: 30
+        justifyContent: 'center',
     },
     titulo: {
         fontWeight: "bold",
         fontFamily: "Urbanist-Semibold", 
         fontSize: 22,
+        marginRight: -30,
         color: "#00635D",
     },
     scrollView: {
@@ -163,18 +193,23 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginBottom: 10,
     },
-    closeButton: {
-        marginTop: 20,
-        backgroundColor: "#00635D",
-        color: '#fff',
-        width: 90,
-        margin: 10
-    },
-    botones:{
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
     trofeos:{
         width: '90%'
-    }
+    },
+    menuStyle: {
+        backgroundColor: '#333',
+        borderRadius: 10,
+        paddingVertical: 5,
+        marginTop: 75
+    },
+    menuItemText: {
+        color: '#fff',
+        fontSize: 16,
+    },
+    divider: {
+        backgroundColor: '#555',
+        height: 1,
+    },
+
+
 });

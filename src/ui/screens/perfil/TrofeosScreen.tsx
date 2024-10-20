@@ -42,7 +42,7 @@ export const TrofeosScreen = () => {
 const styles = StyleSheet.create({
     card: {
         borderRadius: 15,
-        width: '95%',
+        width: '100%',
         elevation: 3,
         backgroundColor: '#fff',
         marginTop: 15,
