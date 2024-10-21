@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, Image, StyleSheet } from 'react-native';
-import * as Progress from 'react-native-progress';
 
-export const LoadingScreen = () => {
+export const LoadingScreen = ({ onFinish }: any) => {  
     const [progress, setProgress] = useState(0);
+    const [fact, setFact] = useState('Cargando dato curioso...');
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -15,8 +15,61 @@ export const LoadingScreen = () => {
             });
         }, 190);
 
+        const getRandomFact = async () => {
+            try {
+                const isCatFact = Math.random() > 0.5;
+
+                if (isCatFact) {
+                    const response = await fetch('https://meowfacts.herokuapp.com/?lang=esp');
+                    const data = await response.json();
+                    setFact(data.data[0]);
+                } else {
+                    const response = await fetch('http://dog-api.kinduff.com/api/facts');
+                    const data = await response.json();
+                    const translatedFact = await translateToSpanish(data.facts[0]);
+                    setFact(translatedFact);
+                }
+
+            } catch (error) {
+                console.error('Error fetching fact:', error);
+                setFact('No se pudo cargar un dato curioso.');
+            }
+        };
+
+        getRandomFact();
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (fact !== 'Cargando dato curioso...') {
+            const readingSpeedWPM = 150;
+            const wordCount = fact.split(' ').length;
+            const readingTime = (wordCount / readingSpeedWPM) * 60 * 1000;
+            
+            const minimumDisplayTime = 7000;
+
+            const displayTime = Math.max(readingTime, minimumDisplayTime);
+
+            setTimeout(() => {
+                if (onFinish) {
+                    onFinish();
+                }
+            }, displayTime);
+        }
+    }, [fact]);
+
+    const translateToSpanish = async (text: string) => {
+        try {
+            const response = await fetch(
+                `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeURI(text)}`
+            );
+            const result = await response.json();
+            return result[0][0][0];
+        } catch (error) {
+            console.error('Error translating fact:', error);
+            return 'No se pudo traducir el dato curioso.';
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -25,9 +78,8 @@ export const LoadingScreen = () => {
             <Text style={styles.sabiasQue}>¿Sabías qué...?</Text>
             
             <Text style={styles.informacion}>
-                "Los gatos tienen 5 dedos en las patas delanteras y 4 en las traseras."
+                {fact}
             </Text>
-            <Progress.Bar progress={progress} width={200} color="#0000ff" style={styles.loader} />
         </SafeAreaView>
     );
 };

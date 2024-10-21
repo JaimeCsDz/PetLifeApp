@@ -29,7 +29,7 @@ export default function App() {
     loadFonts().then(() => {
       setTimeout(() => {
         setIsLoading(false);
-      }, 2000);
+      }, 5000);
     });
   }, []);
 
