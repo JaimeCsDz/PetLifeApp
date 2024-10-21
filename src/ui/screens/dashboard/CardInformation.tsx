@@ -1,67 +1,68 @@
-import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Image, Linking } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
-
-const data = [
-    {
-        id: 1,
-        title: 'Cuida a tu mascota',
-        description: 'Todo lo que debes saber para mantener sana y segura a tu mascota.',
-        label: 'Label',
-        image: require('../../../assets/perro.png'),
-    },
-    {
-        id: 2,
-        title: 'Cuida a tu mascota',
-        description: 'Todo lo que debes saber para mantener sana y segura a tu mascota.',
-        label: 'Label',
-        image: require('../../../assets/perro.png'),
-    },
-    {
-        id: 3,
-        title: 'Cuida a tu mascota',
-        description: 'Todo lo que debes saber para mantener sana y segura a tu mascota.',
-        label: 'Label',
-        image: require('../../../assets/perro.png'),
-    },
-    {
-        id: 4,
-        title: 'Cuida a tu mascota',
-        description: 'Todo lo que debes saber para mantener sana y segura a tu mascota.',
-        label: 'Label',
-        image: require('../../../assets/perro.png'),
-    },
-];
+import { fetchNoticiasMascotas, IArticle } from '../../../actions/dashboard/dashboard';  
+import useInterval from './useInterval';
 
 export const CardInformation = () => {
+    const [articles, setArticles] = useState<IArticle[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [newsPageSize, setNewsPageSize] = useState<number>(1);
+
+    const fetchArticles = async () => {
+        setIsLoading(true);
+        const response = await fetchNoticiasMascotas(newsPageSize);
+        if (response.isSuccess) {
+            setArticles(response.data || []);
+        }
+        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        fetchArticles();
+    }, [newsPageSize]);
+
+    useInterval(() => {
+        const newPageSize = Math.floor(Math.random() * 10) + 1;
+        setNewsPageSize(newPageSize);
+    }, 300000);
+
+    const handlePress = (url: string) => {
+        Linking.openURL(url);
+    };
+
     return (
         <View style={styles.container}>
-        {data.map((item) => (
-            <Card style={styles.card} key={item.id}>
-            <View style={styles.content}>
-                {/* Parte izquierda (label + texto) */}
+        {isLoading ? (
+            <Text>Cargando noticias...</Text>
+        ) : (
+            articles.slice(0, 5).map((item, index) => (
+            <Card style={styles.card} key={index}>
+                <View style={styles.content}>
                 <View style={styles.leftContent}>
-                <View style={styles.label}>
-                    <View style={styles.labelIcon} />
-                    <Text style={styles.labelText}>{item.label}</Text>
-                </View>
-                <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+                    <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
                     {item.title}
-                </Text>
-                <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+                    </Text>
+                    <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
                     {item.description}
-                </Text>
-                <View style={styles.buttonContainer}>
-                    <Button mode="text" textColor="#4E7AD8" compact={true} onPress={() => {}} labelStyle={{textDecorationLine: 'underline'}}>
-                    Ver más
+                    </Text>
+                    <View style={styles.buttonContainer}>
+                    <Button
+                        mode="text"
+                        textColor="#4E7AD8"
+                        compact={true}
+                        onPress={() => handlePress(item.url)}
+                        labelStyle={{textDecorationLine: 'underline'}}
+                    >
+                        Ver más
                     </Button>
+                    </View>
                 </View>
+                <Image source={{ uri: item.urlToImage || 'https://via.placeholder.com/100' }} style={styles.image} />
                 </View>
-
-                <Image source={item.image} style={styles.image} />
-            </View>
             </Card>
-        ))}
+            ))
+        )}
         </View>
     );
 };
@@ -91,40 +92,15 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-between',
     },
-    label: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 5,
-    },
-    labelIcon: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: 'green',
-        marginRight: 5,
-    },
-    labelText: {
-        backgroundColor: '#00635D',
-        color: '#FFFFFF',
-        paddingHorizontal: 8,
-        paddingVertical: 6,
-        borderRadius: 15,
-        fontSize: 12,
-        height: 30,
-        width: 55,
-        textAlign: 'center',
-    },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 5,
-        flexShrink: 1,
     },
     description: {
         fontSize: 14,
         color: '#7A7A7A',
         marginBottom: 5,
-        flexShrink: 1,
     },
     buttonContainer: {
         alignItems: 'flex-start',

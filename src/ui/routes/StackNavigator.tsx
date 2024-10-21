@@ -6,6 +6,7 @@ import { SignUpScreen } from "../screens/auth/SignUpScreen";
 import { InicioScreen } from '../screens/inicio/InicioScreen';
 import { CodigoPostal } from '../screens/auth/CodigoPostalScreen';
 import { FormCitasScreen } from '../screens/citas/FormCitasScreen';
+import { CategoryNewsScreen } from '../screens/dashboard/CategoryNewsScreen';
 
 export type RootStackParams = {
     LoadingScreen: undefined;
@@ -15,6 +16,7 @@ export type RootStackParams = {
     HomeScreen: undefined;
     CodigoPostal: undefined;
     FormCitasScreen: undefined;
+    CategoryNewsScreen: {category:string};
 };
 
 const Stack = createNativeStackNavigator<RootStackParams>();
@@ -36,6 +38,7 @@ export const StackNavigator = () => {
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="CodigoPostal" component={CodigoPostal} />
         <Stack.Screen name="FormCitasScreen" component={FormCitasScreen}/>
+        <Stack.Screen name="CategoryNewsScreen" component={CategoryNewsScreen}/>
 
         </Stack.Navigator>
     );

@@ -1,33 +1,38 @@
-import { ScrollView, StyleSheet, View, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, IconButton, Text, TextInput } from 'react-native-paper';
-
+import { ScrollView, StyleSheet, View, Image, TouchableOpacity } from "react-native";
+import { Text } from 'react-native-paper';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParams } from "../../routes/StackNavigator";
 
 export const CardCategory = () => {
-    return(
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.categoryContainer}>
-            <View style={styles.category}>
-                <Text style={styles.textito}>Gato</Text>
-                <Image source={require("../../../assets/gato1.png")} style={styles.image} />
-            </View>
-            <View style={styles.category}>
-                <Text style={styles.textito}>Perro</Text>
-                <Image source={require("../../../assets/perro.png")} style={styles.image} />
-            </View>
-            <View style={styles.category}>
-                <Text style={styles.textito}>Pájaro</Text>
-                <Image source={require("../../../assets/pajaro.png")} style={styles.image} />
-            </View>
-            <View style={styles.category}>
-                <Text style={styles.textito}>Pez</Text>
-                <Image source={require("../../../assets/pez.png")} style={styles.image} />
-            </View>
-        </View>
-    </ScrollView>
+    const navigation = useNavigation<NavigationProp<RootStackParams>>();
 
-    )
-}
+    const handleCategoryPress = (category: string) => {
+        navigation.navigate('CategoryNewsScreen', { category });
+    };
+
+    return (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.categoryContainer}>
+                <TouchableOpacity style={styles.category} onPress={() => handleCategoryPress('Gato')}>
+                    <Text style={styles.textito}>Gato</Text>
+                    <Image source={require("../../../assets/gato1.png")} style={styles.image} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.category} onPress={() => handleCategoryPress('Perro')}>
+                    <Text style={styles.textito}>Perro</Text>
+                    <Image source={require("../../../assets/perro.png")} style={styles.image} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.category} onPress={() => handleCategoryPress('Pájaro')}>
+                    <Text style={styles.textito}>Pájaro</Text>
+                    <Image source={require("../../../assets/pajaro.png")} style={styles.image} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.category} onPress={() => handleCategoryPress('Pez')}>
+                    <Text style={styles.textito}>Pez</Text>
+                    <Image source={require("../../../assets/pez.png")} style={styles.image} />
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
+    );
+};
 
 const styles = StyleSheet.create({
     categoryContainer: {
@@ -56,4 +61,4 @@ const styles = StyleSheet.create({
         color: "#7d7d7d",
         margin: 0
     },
-})
+});
