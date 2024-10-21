@@ -1,68 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, Linking } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Image } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
-import { fetchNoticiasMascotas, IArticle } from '../../../actions/dashboard/dashboard';  
-import useInterval from './useInterval';
 
-export const CardInformation = () => {
-    const [articles, setArticles] = useState<IArticle[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [newsPageSize, setNewsPageSize] = useState<number>(1);
-
-    const fetchArticles = async () => {
-        setIsLoading(true);
-        const response = await fetchNoticiasMascotas(newsPageSize);
-        if (response.isSuccess) {
-            setArticles(response.data || []);
-        }
-        setIsLoading(false);
-    };
-
-    useEffect(() => {
-        fetchArticles();
-    }, [newsPageSize]);
-
-    useInterval(() => {
-        const newPageSize = Math.floor(Math.random() * 10) + 1;
-        setNewsPageSize(newPageSize);
-    }, 300000);
-
-    const handlePress = (url: string) => {
-        Linking.openURL(url);
-    };
-
+export const CardInformation = ({ articles, isLoading }: { articles: any[], isLoading: boolean }) => {
     return (
         <View style={styles.container}>
-        {isLoading ? (
-            <Text>Cargando noticias...</Text>
-        ) : (
-            articles.slice(0, 5).map((item, index) => (
-            <Card style={styles.card} key={index}>
-                <View style={styles.content}>
-                <View style={styles.leftContent}>
-                    <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-                    {item.title}
-                    </Text>
-                    <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
-                    {item.description}
-                    </Text>
-                    <View style={styles.buttonContainer}>
-                    <Button
-                        mode="text"
-                        textColor="#4E7AD8"
-                        compact={true}
-                        onPress={() => handlePress(item.url)}
-                        labelStyle={{textDecorationLine: 'underline'}}
-                    >
-                        Ver más
-                    </Button>
-                    </View>
-                </View>
-                <Image source={{ uri: item.urlToImage || 'https://via.placeholder.com/100' }} style={styles.image} />
-                </View>
-            </Card>
-            ))
-        )}
+            {isLoading ? (
+                <Text>Cargando noticias...</Text>
+            ) : (
+                articles.slice(0, 5).map((item, index) => (
+                    <Card style={styles.card} key={index}>
+                        <View style={styles.content}>
+                            <View style={styles.leftContent}>
+                                <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.title}
+                                </Text>
+                                <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+                                    {item.description}
+                                </Text>
+                                <View style={styles.buttonContainer}>
+                                    <Button
+                                        mode="text"
+                                        textColor="#4E7AD8"
+                                        compact={true}
+                                        onPress={() => { /* Manejar el evento de ver más */ }}
+                                        labelStyle={{ textDecorationLine: 'underline' }}
+                                    >
+                                        Ver más
+                                    </Button>
+                                </View>
+                            </View>
+                            <Image source={{ uri: item.urlToImage || 'https://via.placeholder.com/100' }} style={styles.image} />
+                        </View>
+                    </Card>
+                ))
+            )}
         </View>
     );
 };

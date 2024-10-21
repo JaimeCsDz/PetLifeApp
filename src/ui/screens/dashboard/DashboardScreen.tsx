@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, IconButton, Text, TextInput } from 'react-native-paper';
@@ -5,36 +6,58 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { CardCategory } from "./CardCategory";
 import { CardInformation } from "./CardInformation";
+import { fetchNoticiasMascotas } from "../../../actions/dashboard/dashboard"; 
+import { IArticle } from '../../../actions/dashboard/dashboard';
 
 export const DashboardScreen = () => {
+    const [selectedCategory, setSelectedCategory] = useState<string>('pets'); 
+    const [articles, setArticles] = useState<IArticle[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    const handleCategoryPress = (category: string) => {
+        setSelectedCategory(category);
+    };
+
+    useEffect(() => {
+        const fetchArticles = async () => {
+            setIsLoading(true);
+            const response = await fetchNoticiasMascotas(1, selectedCategory); 
+            if (response.isSuccess) {
+                setArticles(response.data || []);
+            }
+            setIsLoading(false);
+        };
+        
+        fetchArticles();
+    }, [selectedCategory]);
+
     return (
-        <>
         <SafeAreaView style={{ flex: 1 }}>
-                <View style={styles.headerContainer}>
-                    <Text style={styles.text}>
-                        Hola, <Text style={{fontWeight: "bold"}}>Javier Can</Text>
-                    </Text>
-                    <Icon name='notifications-none' size={30} />
-                </View>
+            <View style={styles.headerContainer}>
+                <Text style={styles.text}>
+                    Hola, <Text style={{fontWeight: "bold"}}>Javier Can</Text>
+                </Text>
+                <Icon name='notifications-none' size={30} />
+            </View>
 
             <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
                 <View style={styles.searchcontainer}>
                     <TextInput
-                    placeholder="Buscar..."
-                    placeholderTextColor={'#ABB7C2'}
-                    activeOutlineColor="#ABB7C2"
-                    mode="outlined"
-                    outlineColor="#ABB7C2"
-                    style={{width: '75%'}}
-                    theme={{roundness: 20}}
-                    right={
-                        <TextInput.Icon
-                            icon={() => (
-                                <MaterialCommunityIcons name="magnify" size={24} color="#ABB7C2" />
-                        )}
-                        />
-                    }>
-                    </TextInput>
+                        placeholder="Buscar..."
+                        placeholderTextColor={'#ABB7C2'}
+                        activeOutlineColor="#ABB7C2"
+                        mode="outlined"
+                        outlineColor="#ABB7C2"
+                        style={{width: '75%'}}
+                        theme={{roundness: 20}}
+                        right={
+                            <TextInput.Icon
+                                icon={() => (
+                                    <MaterialCommunityIcons name="magnify" size={24} color="#ABB7C2" />
+                            )}
+                            />
+                        }
+                    />
                     <View style={styles.icon}>
                         <IconButton
                             icon={'tune-variant'}
@@ -45,7 +68,7 @@ export const DashboardScreen = () => {
                 </View>
 
                 <View>
-                    <CardCategory />
+                    <CardCategory onCategoryPress={handleCategoryPress} />
                 </View>
 
                 <View style={styles.rowContainer}>
@@ -57,15 +80,14 @@ export const DashboardScreen = () => {
                 </View>
 
                 <View>
-                    <CardInformation />
+                    <CardInformation articles={articles} isLoading={isLoading} />
                 </View>
             </ScrollView>
         </SafeAreaView>
-        </>
     );
 };
 
-const styles = StyleSheet.create ({
+const styles = StyleSheet.create({
     headerContainer: {
         paddingLeft: 20,
         paddingTop: 20,
@@ -81,14 +103,14 @@ const styles = StyleSheet.create ({
         fontWeight: 'bold',
         textDecorationLine: 'underline',
     },
-    searchcontainer:{
+    searchcontainer: {
         paddingTop: 20,
         paddingLeft: 15,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between'
     },
-    icon:{
+    icon: {
         borderCurve: 'circular',
         borderWidth: 1.5,
         borderRadius: 15,
