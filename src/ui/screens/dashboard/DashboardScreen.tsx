@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, View, Image } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, IconButton, Text, TextInput } from 'react-native-paper';
+import { TextInput, Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { CardCategory } from "./CardCategory";
 import { CardInformation } from "./CardInformation";
-import { fetchNoticiasMascotas } from "../../../actions/dashboard/dashboard"; 
-import { IArticle } from '../../../actions/dashboard/dashboard';
+import { fetchNoticiasMascotas, IArticle } from "../../../actions/dashboard/dashboard";
 
 export const DashboardScreen = () => {
-    const [selectedCategory, setSelectedCategory] = useState<string>('pets'); 
+    const [selectedCategory, setSelectedCategory] = useState<string>('pets');
     const [articles, setArticles] = useState<IArticle[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [searchTerm, setSearchTerm] = useState<string>(''); 
 
     const handleCategoryPress = (category: string) => {
         setSelectedCategory(category);
@@ -21,7 +21,7 @@ export const DashboardScreen = () => {
     useEffect(() => {
         const fetchArticles = async () => {
             setIsLoading(true);
-            const response = await fetchNoticiasMascotas(1, selectedCategory); 
+            const response = await fetchNoticiasMascotas(1, selectedCategory);
             if (response.isSuccess) {
                 setArticles(response.data || []);
             }
@@ -30,6 +30,17 @@ export const DashboardScreen = () => {
         
         fetchArticles();
     }, [selectedCategory]);
+
+    const handleSearch = async () => {
+        if (searchTerm) {
+            setIsLoading(true);
+            const response = await fetchNoticiasMascotas(1, searchTerm);
+            if (response.isSuccess) {
+                setArticles(response.data || []);
+            }
+            setIsLoading(false);
+        }
+    };
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -50,11 +61,15 @@ export const DashboardScreen = () => {
                         outlineColor="#ABB7C2"
                         style={{width: '75%'}}
                         theme={{roundness: 20}}
+                        value={searchTerm}
+                        onChangeText={setSearchTerm}
+                        onSubmitEditing={handleSearch}
                         right={
                             <TextInput.Icon
                                 icon={() => (
                                     <MaterialCommunityIcons name="magnify" size={24} color="#ABB7C2" />
-                            )}
+                                )}
+                                onPress={handleSearch}
                             />
                         }
                     />
