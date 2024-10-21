@@ -30,7 +30,7 @@ export const fetchNoticiasMascotas = async (page: number = 1, category: string =
         const { data } = await newsApi.get("/everything", {
             params: {
                 q: searchQuery,
-                apiKey: "dd27e2e8bc3e42019de5d7b28a13647b",
+                apiKey: `${API_DASHBOARD}`,
                 language: "es",
                 pageSize: 10,
                 page: page
