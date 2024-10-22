@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -43,23 +43,22 @@ export const DashboardScreen = () => {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <View style={styles.headerContainer}>
-                <Text style={styles.text}>
+        <SafeAreaView className='flex-1'>
+            <View className="pl-6 pt-5 flex-row items-center justify-between pr-6">
+                <Text className='text-2xl'>
                     Hola, <Text style={{fontWeight: "bold"}}>Javier Can</Text>
                 </Text>
                 <Icon name='notifications-none' size={30} />
             </View>
 
-            <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
-                <View style={styles.searchcontainer}>
+                <View className='pt-5 pl-5 flex-row align-middle justify-between'>
                     <TextInput
                         placeholder="Buscar..."
                         placeholderTextColor={'#ABB7C2'}
                         activeOutlineColor="#ABB7C2"
                         mode="outlined"
                         outlineColor="#ABB7C2"
-                        style={{width: '75%'}}
+                        style={{width: '78%'}}
                         theme={{roundness: 20}}
                         value={searchTerm}
                         onChangeText={setSearchTerm}
@@ -73,7 +72,7 @@ export const DashboardScreen = () => {
                             />
                         }
                     />
-                    <View style={styles.icon}>
+                    <View className="border rounded-xl border-gray-400 mr-3">
                         <IconButton
                             icon={'tune-variant'}
                             iconColor="#ABB7C2"
@@ -86,14 +85,14 @@ export const DashboardScreen = () => {
                     <CardCategory onCategoryPress={handleCategoryPress} />
                 </View>
 
-                <View style={styles.rowContainer}>
-                    <View style={styles.textContainer}>
-                        <Text style={styles.boldText}>Reciente</Text>
-                        <Text style={{color: 'gray', marginLeft: 15}}>Popular</Text>
+            <ScrollView className='flex-grow pb-5'>
+                <View className='flex-row justify-between align-middle pl-5 pr-5 pt-3'>
+                    <View className='flex-row align-middle'>
+                        <Text className='font-bold underline'>Reciente</Text>
+                        <Text className='text-gray-500 ml-3'>Popular</Text>
                     </View>
-                    <Text style={{color: '#4E7AD8'}}>Ver todo</Text>
+                    <Text className='text-blue-600'>Ver todo</Text>
                 </View>
-
                 <View>
                     <CardInformation articles={articles} isLoading={isLoading} />
                 </View>
@@ -102,46 +101,3 @@ export const DashboardScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    headerContainer: {
-        paddingLeft: 20,
-        paddingTop: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingRight: 20,
-    },
-    text: {
-        fontSize: 22,
-    },
-    boldText: {
-        fontWeight: 'bold',
-        textDecorationLine: 'underline',
-    },
-    searchcontainer: {
-        paddingTop: 20,
-        paddingLeft: 15,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-    },
-    icon: {
-        borderCurve: 'circular',
-        borderWidth: 1.5,
-        borderRadius: 15,
-        borderColor: '#ABB7C2',
-        marginRight: 10
-    },
-    rowContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 10,
-    },
-    textContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-});
