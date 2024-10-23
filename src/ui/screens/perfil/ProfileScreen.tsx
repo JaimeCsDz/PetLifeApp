@@ -7,18 +7,30 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { VacunasScreen } from './VacunasScreen';
 import { TrofeosScreen } from './TrofeosScreen';
 import { VacunaModal } from './VacunasModal'; 
-import { useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { RootStackParams } from '../../routes/StackNavigator';
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
     const [menuVisible, setMenuVisible] = useState(false);
+
+    const navigation = useNavigation<NavigationProp<RootStackParams>>();
+
 
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
     const openMenu = () => setMenuVisible(true);
     const closeMenu = () => setMenuVisible(false);
     const logOut = useAuthStore((x)=> x.logout)
+
+    const handleLogOut = () => {
+        logOut()
+        navigation.reset({
+            index: 0,
+            routes: [{name: 'InicioScreen'}]
+        })
+    }
 
     const handlePerfil = () => {
         console.log('Cambiar de perfil');
@@ -54,7 +66,7 @@ export const ProfileScreen = () => {
                     />
                     <Divider style={styles.divider} />
                     <Menu.Item
-                        onPress={logOut}
+                        onPress={handleLogOut}
                         title="Cerrar sesión"
                         leadingIcon={() => <MaterialCommunityIcons name="logout" size={20} color="#fff" />}
                         titleStyle={styles.menuItemText}

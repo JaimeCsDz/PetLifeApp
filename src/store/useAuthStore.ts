@@ -5,21 +5,31 @@ interface AuthState {
     token: string | null;
     login: (token: string) => void;
     logout: () => void;
+    checkAuthStatus: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
     status: "checking",
-    token: null, 
+    token: null,
 
-    login: (token: string) =>
+    login: (token: string) => {
         set({
-        status: "authenticated",
-        token,
-        }),
+            status: "authenticated",
+            token,
+        });
+    },
 
-    logout: () =>
+    logout: () => {
         set({
-        status: "not-authenticated",
-        token: null,
-        }),
+            status: "not-authenticated",
+            token: null,
+        });
+    },
+
+    checkAuthStatus: () => {
+        set({
+            status: "not-authenticated",
+            
+        });
+    }
 }));
