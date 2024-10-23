@@ -8,6 +8,7 @@ import { VacunasScreen } from './VacunasScreen';
 import { TrofeosScreen } from './TrofeosScreen';
 import { VacunaModal } from './VacunasModal'; 
 import { useNavigation } from '@react-navigation/native';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
@@ -17,16 +18,14 @@ export const ProfileScreen = () => {
     const hideModal = () => setVisible(false);
     const openMenu = () => setMenuVisible(true);
     const closeMenu = () => setMenuVisible(false);
+    const logOut = useAuthStore((x)=> x.logout)
 
     const handlePerfil = () => {
         console.log('Cambiar de perfil');
         closeMenu();
     };
 
-    const handleCerrarSesion = () => {
-        console.log('Cerrar sesión');
-        closeMenu();
-    };
+
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -55,7 +54,7 @@ export const ProfileScreen = () => {
                     />
                     <Divider style={styles.divider} />
                     <Menu.Item
-                        onPress={handleCerrarSesion}
+                        onPress={logOut}
                         title="Cerrar sesión"
                         leadingIcon={() => <MaterialCommunityIcons name="logout" size={20} color="#fff" />}
                         titleStyle={styles.menuItemText}

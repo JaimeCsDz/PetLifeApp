@@ -8,6 +8,7 @@ import { useColorScheme } from 'react-native';
 import { lightTheme, darkTheme } from './src/ui/constants/Colors';
 import * as Font from 'expo-font';
 import { LoadingScreen } from './src/ui/screens/loading/LoadingScreen';
+import { AuthProvider } from './src/ui/providers/AuthProvider';
 
 export default function App() {
   const scheme = useColorScheme();
@@ -40,9 +41,11 @@ export default function App() {
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer>
-        <GestureHandlerRootView style={{ flex: 1 }}> 
+        <AuthProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}> 
             <StackNavigator />
-        </GestureHandlerRootView>
+          </GestureHandlerRootView>
+        </AuthProvider>
       </NavigationContainer>
     </PaperProvider>
   );
