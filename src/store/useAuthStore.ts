@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     checkAuthStatus: () => {
         set({
-            status: "not-authenticated",  // Por defecto cambiamos a "not-authenticated"
+            status: "not-authenticated",
             
         });
     }

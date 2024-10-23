@@ -69,8 +69,8 @@ export const SignInScreen = ({ navigation }: Props) => {
   const isFormValid = password && email && !PasswordError && !emailError;
 
   const onLogin = async () => {
+    setIsLoading(true);
     try {
-
       const authRequest: IAuthRequest = {
         Correo: email,
         Contraseña: password,
@@ -79,7 +79,6 @@ export const SignInScreen = ({ navigation }: Props) => {
       const response = await authLogin(authRequest);
 
       if (response.isSuccess) {
-        setIsLoading(true);
         navigation.navigate('HomeScreen');
       } else {
         Alert.alert('Error', response.message || 'Credenciales incorrectas');
@@ -87,7 +86,7 @@ export const SignInScreen = ({ navigation }: Props) => {
     } catch (error) {
       console.error('Error en la autenticación', error);
       Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
-    } finally {
+    }finally {
       setIsLoading(false);
     }
   };
