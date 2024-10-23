@@ -1,24 +1,26 @@
-import { StackScreenProps } from "@react-navigation/stack";
-import { ScrollView } from "react-native-gesture-handler";
-import { RootStackParams } from "../../routes/StackNavigator";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useState } from 'react';
+import { StackScreenProps } from '@react-navigation/stack';
+import { ScrollView } from 'react-native-gesture-handler';
+import { RootStackParams } from '../../routes/StackNavigator';
+import { Text, TextInput, Button, HelperText } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
-  View,
-  Image,
-  TouchableOpacity,
-} from "react-native";
-import { TextInput, Text, Button, HelperText } from "react-native-paper";
-import { useState } from "react";
+  Alert,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface Props extends StackScreenProps<RootStackParams, "SignUpScreen"> {}
+interface Props extends StackScreenProps<RootStackParams, 'SignUpScreen'> {}
 
 export const SignUpScreen = ({ navigation }: Props) => {
-  const [name, setName] = useState<string>("");
-  const [surnameP, setsurnameP] = useState<string>("");
-  const [surnameM, setsurnameM] = useState<string>("");
+  const [name, setName] = useState<string>('');
+  const [surnameP, setsurnameP] = useState<string>('');
+  const [surnameM, setsurnameM] = useState<string>('');
   const [nameError, setNameError] = useState<boolean>(false);
   const [surnamePError, setsurnamePError] = useState<boolean>(false);
   const [surnameMError, setsurnameMError] = useState<boolean>(false);
@@ -26,7 +28,6 @@ export const SignUpScreen = ({ navigation }: Props) => {
   const [issurnamePTouched, setIssurnamePTouched] = useState<boolean>(false);
   const [issurnameMTouched, setIssurnameMTouched] = useState<boolean>(false);
 
-  /* Funcion de validacion de nombre */
   const validateName = (name: string) => {
     const NameRegex = /^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/;
     return NameRegex.test(name);
@@ -70,21 +71,33 @@ export const SignUpScreen = ({ navigation }: Props) => {
 
   const isFormValid = name && surnameP && surnameM && !nameError && !surnamePError && !surnameMError;
 
+  const onNextStep = async () => {
+    if (!isFormValid) {
+      Alert.alert('Error', 'Por favor, completa todos los campos correctamente.');
+      return;
+    }
+
+    // Guardar datos en AsyncStorage
+    try {
+      await AsyncStorage.setItem('@userData', JSON.stringify({ nombre: name, apPaterno: surnameP, apMaterno: surnameM }));
+      navigation.navigate('CodigoPostal');
+    } catch (error) {
+      Alert.alert('Error', 'Ocurrió un error al guardar los datos.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingContainer}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.formContainer}>
-          <Image
-              source={require("../../../assets/SignUp.png")}
-              style={styles.floatingImage}
-            />
-          <Text style={styles.title}>
-              <Text style={styles.titleLine1}>Crea una</Text>{"\n"}
+            <Image source={require('../../../assets/SignUp.png')} style={styles.floatingImage} />
+            <Text style={styles.title}>
+              <Text style={styles.titleLine1}>Crea una</Text>{'\n'}
               <Text style={styles.titleLine2}>cuenta</Text>
             </Text>
 
@@ -94,8 +107,8 @@ export const SignUpScreen = ({ navigation }: Props) => {
               outlineColor="#C4C4C4"
               activeOutlineColor="#037972"
               placeholder="Ex. Saul Ramirez"
-              placeholderTextColor={"#C4C4C4"}
-              left={<TextInput.Icon icon="account" color={'#C4C4C4'}/>}
+              placeholderTextColor={'#C4C4C4'}
+              left={<TextInput.Icon icon="account" color={'#C4C4C4'} />}
               style={styles.input}
               value={name}
               onBlur={handleName}
@@ -104,9 +117,7 @@ export const SignUpScreen = ({ navigation }: Props) => {
             />
 
             {nameError && isNameTouched ? (
-              <HelperText type="error">
-                El Nombre no es valido.
-              </HelperText>
+              <HelperText type="error">El Nombre no es válido.</HelperText>
             ) : null}
 
             <TextInput
@@ -114,9 +125,9 @@ export const SignUpScreen = ({ navigation }: Props) => {
               mode="outlined"
               outlineColor="#C4C4C4"
               activeOutlineColor="#037972"
-              placeholder="Ex. Saul Ramirez"
-              placeholderTextColor={"#C4C4C4"}
-              left={<TextInput.Icon icon="account-tie" color={'#C4C4C4'}/>}
+              placeholder="Ex. Lopez"
+              placeholderTextColor={'#C4C4C4'}
+              left={<TextInput.Icon icon="account-tie" color={'#C4C4C4'} />}
               style={styles.input}
               value={surnameP}
               onBlur={handlesurnameP}
@@ -125,19 +136,17 @@ export const SignUpScreen = ({ navigation }: Props) => {
             />
 
             {surnamePError && issurnamePTouched ? (
-              <HelperText type="error">
-                El Apellido Paterno no es valido.
-              </HelperText>
+              <HelperText type="error">El Apellido Paterno no es válido.</HelperText>
             ) : null}
 
-          <TextInput
+            <TextInput
               label="Apellido materno"
               mode="outlined"
               outlineColor="#C4C4C4"
               activeOutlineColor="#037972"
-              placeholder="Ex. Saul Ramirez"
-              placeholderTextColor={"#C4C4C4"}
-              left={<TextInput.Icon icon="account-star-outline" color={'#C4C4C4'}/>}
+              placeholder="Ex. Gomez"
+              placeholderTextColor={'#C4C4C4'}
+              left={<TextInput.Icon icon="account-star-outline" color={'#C4C4C4'} />}
               style={styles.input}
               value={surnameM}
               onBlur={handlesurnameM}
@@ -146,34 +155,23 @@ export const SignUpScreen = ({ navigation }: Props) => {
             />
 
             {surnameMError && issurnameMTouched ? (
-              <HelperText type="error">
-                El Apellido Materno no es valido.
-              </HelperText>
+              <HelperText type="error">El Apellido Materno no es válido.</HelperText>
             ) : null}
-          
 
-            <Button mode="outlined" style={styles.registerButton} textColor="#00635D" onPress={()=>navigation.navigate('CodigoPostal')} disabled={!isFormValid}>
+            <Button mode="outlined" style={styles.registerButton} textColor="#00635D" onPress={onNextStep} disabled={!isFormValid}>
               Siguiente
             </Button>
 
-            <TouchableOpacity
-              onPress={() => navigation.navigate("SignInScreen")}
-            >
+            <TouchableOpacity onPress={() => navigation.navigate('SignInScreen')}>
               <Text style={styles.loginText}>¿Ya tienes una cuenta?</Text>
             </TouchableOpacity>
-
-            {/* Imagen flotante montada en la esquina inferior derecha */}
-            
-            <Image
-              source={require("../../../assets/gato.png")}
-              style={styles.bottomImage}
-            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

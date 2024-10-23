@@ -3,12 +3,17 @@ export interface IAuthResponse {
     token: string;
     datosPersona: IPersonaAPI;
 }
+export interface IGeneroDto {
+    idGenero: number;
+    generos: string;
+}
 
 export interface IPersonaAPI {
-    personaId: string;
     nombre: string;
-    apellidopaterno: string;
-    apellidomaterno: string,
-    email: string;
-    genero: string;
+    apPaterno: string;
+    apMaterno: string;
+    correo: string;
+    contraseña: string;
+    codigoPostal: string;
+    idGenero: string;
 }
