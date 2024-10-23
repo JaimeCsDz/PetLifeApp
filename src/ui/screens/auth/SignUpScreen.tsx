@@ -79,7 +79,8 @@ export const SignUpScreen = ({ navigation }: Props) => {
 
     // Guardar datos en AsyncStorage
     try {
-      await AsyncStorage.setItem('@userData', JSON.stringify({ nombre: name, apPaterno: surnameP, apMaterno: surnameM }));
+      const userData = {nombre: name, apPaterno: surnameP, apMaterno: surnameM}
+      await AsyncStorage.setItem('@userData', JSON.stringify(userData));
       navigation.navigate('CodigoPostal');
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al guardar los datos.');

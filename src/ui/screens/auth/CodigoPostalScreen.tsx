@@ -5,7 +5,6 @@ import {
   ScrollView,
   View,
   TouchableOpacity,
-  Image,
   StyleSheet,
   Alert,
 } from 'react-native';
@@ -36,29 +35,19 @@ export const CodigoPostal = ({ navigation }: Props) => {
   const [genderError, setGenderError] = useState<boolean>(false);
   const [isGenderTouched, setIsGenderTouched] = useState<boolean>(false);
   const [hidePass, setHidePass] = useState<boolean>(true);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await getGeneros();
-        if (response && response.length > 0) {
+        if (response.length > 0) {
           setGeneros(response);
         } else {
           Alert.alert('Error', 'No se encontraron géneros.');
         }
-
-        const storedData = await AsyncStorage.getItem('@userData');
-        if (storedData) {
-          const { nombre, apPaterno, apMaterno } = JSON.parse(storedData);
-          setEmail(nombre);
-          setPostalCode(apPaterno);
-          setPassword(apMaterno);
-        }
       } catch (error) {
         Alert.alert('Error', 'Ocurrió un error al cargar los datos.');
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -99,18 +88,21 @@ export const CodigoPostal = ({ navigation }: Props) => {
       return;
     }
 
-    const userData: IPersonaAPI = {
-      nombre: email,
-      apPaterno: postalCode,
-      apMaterno: password,
-      correo: email,
-      contraseña: password,
-      codigoPostal: postalCode,
-      idGenero: selectedGender,
-    };
-
     try {
-      const response = await authRegister(userData);
+      // Recuperar datos almacenados de la primera vista
+      const storedData = await AsyncStorage.getItem('@userData');
+      const userData = storedData ? JSON.parse(storedData) : {};
+
+      // Agregar los nuevos datos a los que se guardaron previamente
+      const finalData: IPersonaAPI = {
+        ...userData,
+        correo: email,
+        contraseña: password,
+        codigoPostal: postalCode,
+        idGenero: selectedGender,
+      };
+
+      const response = await authRegister(finalData);
 
       if (response.isSuccess) {
         Alert.alert('Éxito', 'Registro completado');

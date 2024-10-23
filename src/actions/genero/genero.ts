@@ -1,17 +1,13 @@
-import { petLifeAPI } from '../../config/PetLifeAPI'; // Ajusta la ruta si es necesario
-import { ResponseHelper } from '../../models'; // Asegúrate de que la ruta sea correcta
-import { IGeneroDto } from '../../interfaces'; // Ajusta la ruta
+import { petLifeAPI } from '../../config/PetLifeAPI';
+import { IGeneroDto } from '../../interfaces'; 
 
-export const getGeneros = async (): Promise<ResponseHelper<IGeneroDto[]>> => {
-  let response = new ResponseHelper<IGeneroDto[]>();
-
+export const getGeneros = async (): Promise<IGeneroDto[]> => {
   try {
-    const res = await petLifeAPI.get<ResponseHelper<IGeneroDto[]>>('/Genero');
-    response = res.data;
+    const res = await petLifeAPI.get<IGeneroDto[]>('/Genero');
+    console.log('Respuesta del servidor:', res.data); 
+    return res.data;  // Aquí devolvemos el array directamente
   } catch (error) {
     console.error('Error en la respuesta del servidor:', error);
-    response = { isSuccess: false, message: 'Error desconocido' };
+    return []; 
   }
-
-  return response;
 };

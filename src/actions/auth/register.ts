@@ -1,17 +1,16 @@
 import { petLifeAPI } from './../../config/PetLifeAPI';
-import type { IAuthRequest, IAuthResponse } from '../../interfaces';
+import type { IAuthRequest, IAuthResponse, IPersonaAPI } from '../../interfaces';
 import { ResponseHelper } from '../../models';
 
-export const authRegister = async (authRequest: IAuthRequest): Promise<ResponseHelper<IAuthResponse>> => {
+export const authRegister = async (authRequest: IPersonaAPI): Promise<ResponseHelper<IAuthResponse>> => {
   const response = new ResponseHelper<IAuthResponse>();
 
   try {
     const res = await petLifeAPI.post('/Auth/register', authRequest);
-    // Verificar si el status de la respuesta es exitoso
     if (res.status === 200 && res.data.message === 'Usuario registrado exitosamente.') {
       response.isSuccess = true;
-      response.message = res.data.message; // Usar el mensaje de la respuesta
-      response.data = res.data.token; // Guardar el token si es necesario
+      response.message = res.data.message;
+      response.data = res.data.token;
     } else {
       response.isSuccess = false;
       response.message = res.data.message || 'Error durante el registro.';

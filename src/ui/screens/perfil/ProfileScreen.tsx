@@ -33,7 +33,7 @@ export const ProfileScreen = () => {
     }
 
     const handlePerfil = () => {
-        console.log('Cambiar de perfil');
+        
         closeMenu();
     };
 
