@@ -28,7 +28,7 @@ export const SignInScreen = ({ navigation }: Props) => {
   const [password, setPassword] = useState<string>('');
   const [PasswordError, setPasswordError] = useState<boolean>(false);
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);  // Estado para controlar la pantalla de carga
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Función de validación de email
   const validateEmail = (email: string) => {
@@ -70,7 +70,6 @@ export const SignInScreen = ({ navigation }: Props) => {
 
   const onLogin = async () => {
     try {
-      setIsLoading(true);  // Mostrar pantalla de carga personalizada
 
       const authRequest: IAuthRequest = {
         Correo: email,
@@ -80,6 +79,7 @@ export const SignInScreen = ({ navigation }: Props) => {
       const response = await authLogin(authRequest);
 
       if (response.isSuccess) {
+        setIsLoading(true);
         navigation.navigate('HomeScreen');
       } else {
         Alert.alert('Error', response.message || 'Credenciales incorrectas');
@@ -88,11 +88,10 @@ export const SignInScreen = ({ navigation }: Props) => {
       console.error('Error en la autenticación', error);
       Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
     } finally {
-      setIsLoading(false);  // Ocultar pantalla de carga
+      setIsLoading(false);
     }
   };
 
-  // Mostrar la pantalla de carga personalizada si está cargando
   if (isLoading) {
     return <LoadingScreen />;
   }
