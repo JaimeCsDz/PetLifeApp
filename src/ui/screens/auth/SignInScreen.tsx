@@ -1,8 +1,9 @@
-import { StackScreenProps } from "@react-navigation/stack";
-import { ScrollView } from "react-native-gesture-handler";
-import { RootStackParams } from "../../routes/StackNavigator";
-import { Text, TextInput, Button, HelperText } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useState } from 'react';
+import { StackScreenProps } from '@react-navigation/stack';
+import { ScrollView } from 'react-native-gesture-handler';
+import { RootStackParams } from '../../routes/StackNavigator';
+import { Text, TextInput, Button, HelperText } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   StyleSheet,
@@ -10,22 +11,26 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-} from "react-native";
-import { Icon } from "react-native-paper";
-import { useState } from "react";
+  Alert,
+} from 'react-native';
+import { Icon } from 'react-native-paper';
+import { authLogin } from '../../../actions/auth/auth';
+import { IAuthRequest } from '../../../interfaces';
+import { LoadingScreen } from '../../screens/loading/LoadingScreen';
 
-interface Props extends StackScreenProps<RootStackParams, "SignInScreen"> {}
+interface Props extends StackScreenProps<RootStackParams, 'SignInScreen'> {}
 
 export const SignInScreen = ({ navigation }: Props) => {
   const [hidePass, setHidePass] = useState<boolean>(true);
-  const [email, setEmail] = useState<string>("");
+  const [email, setEmail] = useState<string>('');
   const [emailError, setEmailError] = useState<boolean>(false);
   const [isEmailTouched, setIsEmailTouched] = useState<boolean>(false);
-  const [password, setPassword] = useState<string>("");
+  const [password, setPassword] = useState<string>('');
   const [PasswordError, setPasswordError] = useState<boolean>(false);
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);  // Estado para controlar la pantalla de carga
 
-  // Función de validación de email :3
+  // Función de validación de email
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -35,7 +40,7 @@ export const SignInScreen = ({ navigation }: Props) => {
     setEmail(email);
 
     if (isEmailTouched) {
-      setEmailError(!validateEmail(email)); 
+      setEmailError(!validateEmail(email));
     }
   };
 
@@ -44,44 +49,69 @@ export const SignInScreen = ({ navigation }: Props) => {
     setEmailError(!validateEmail(email));
   };
 
-  // Función de validación de pass :3
   const validatePassword = (password: string) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return passwordRegex.test(password);
+    return password.length > 0;
   };
 
   const onChangePassword = (password: string) => {
     setPassword(password);
 
     if (isPasswordTouched) {
-      setPasswordError(!validatePassword(password)); 
+      setPasswordError(password.length === 0);
     }
   };
 
   const handlePassword = () => {
     setIsPasswordTouched(true);
-    setPasswordError(!validatePassword(password));
+    setPasswordError(password.length === 0);
   };
 
   const isFormValid = password && email && !PasswordError && !emailError;
 
+  const onLogin = async () => {
+    try {
+      setIsLoading(true);  // Mostrar pantalla de carga personalizada
+
+      const authRequest: IAuthRequest = {
+        Correo: email,
+        Contraseña: password,
+      };
+
+      const response = await authLogin(authRequest);
+
+      if (response.isSuccess) {
+        navigation.navigate('HomeScreen');
+      } else {
+        Alert.alert('Error', response.message || 'Credenciales incorrectas');
+      }
+    } catch (error) {
+      console.error('Error en la autenticación', error);
+      Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
+    } finally {
+      setIsLoading(false);  // Ocultar pantalla de carga
+    }
+  };
+
+  // Mostrar la pantalla de carga personalizada si está cargando
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingContainer}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Imagen del perro */}
           <View style={styles.header}>
             <Image
-              source={require("../../../assets/Login.png")}
+              source={require('../../../assets/Login.png')}
               style={styles.image}
-            ></Image>
+            />
           </View>
 
-          {/* Formulario de inicio de sesión */}
           <View style={styles.formContainer}>
             <Text style={styles.welcomeText}>
               Bienvenido <Icon source="paw" size={40} color="#905010" />
@@ -93,7 +123,7 @@ export const SignInScreen = ({ navigation }: Props) => {
               outlineColor="#C4C4C4"
               activeOutlineColor="#C4C4C4"
               placeholder="Ex: abc@example.com"
-              placeholderTextColor={"#C4C4C4"}
+              placeholderTextColor={'#C4C4C4'}
               left={<TextInput.Icon icon="email" />}
               style={styles.input}
               value={email}
@@ -113,7 +143,7 @@ export const SignInScreen = ({ navigation }: Props) => {
               mode="outlined"
               secureTextEntry={hidePass}
               placeholder="********"
-              placeholderTextColor={"#C4C4C4"}
+              placeholderTextColor={'#C4C4C4'}
               outlineColor="#C4C4C4"
               activeOutlineColor="#C4C4C4"
               left={<TextInput.Icon icon="lock" />}
@@ -121,7 +151,7 @@ export const SignInScreen = ({ navigation }: Props) => {
               textColor="#C4C4C4"
               right={
                 <TextInput.Icon
-                  icon={hidePass ? "eye-outline" : "eye-off-outline"}
+                  icon={hidePass ? 'eye-outline' : 'eye-off-outline'}
                   onPress={() => setHidePass(!hidePass)}
                 />
               }
@@ -133,11 +163,16 @@ export const SignInScreen = ({ navigation }: Props) => {
 
             {PasswordError && isPasswordTouched ? (
               <HelperText type="error">
-                La constraseña no es valida (requisito no validos).
+                La contraseña no es válida.
               </HelperText>
             ) : null}
 
-            <Button mode="contained" style={styles.loginButton} disabled={!isFormValid} onPress={()=> navigation.navigate('HomeScreen')}>
+            <Button
+              mode="contained"
+              style={styles.loginButton}
+              disabled={!isFormValid}
+              onPress={onLogin}
+            >
               Iniciar sesión
             </Button>
 
@@ -150,7 +185,7 @@ export const SignInScreen = ({ navigation }: Props) => {
             <View style={styles.registerContainer}>
               <Text>¿No tienes una cuenta? </Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate("SignUpScreen")}
+                onPress={() => navigation.navigate('SignUpScreen')}
               >
                 <Text style={styles.registerText}>Regístrate</Text>
               </TouchableOpacity>
@@ -165,19 +200,19 @@ export const SignInScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
   },
   keyboardAvoidingContainer: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingVertical: 40,
   },
   header: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: -40,
     zIndex: 1,
   },
@@ -188,49 +223,49 @@ const styles = StyleSheet.create({
     marginTop: -165,
   },
   formContainer: {
-    backgroundColor: "#FFFF",
+    backgroundColor: '#FFFF',
     borderRadius: 30,
     padding: 20,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
     elevation: 5,
-    width: "80%",
+    width: '80%',
     zIndex: 0,
-    alignItems: "center",
+    alignItems: 'center',
   },
   welcomeText: {
     fontSize: 30,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#037972",
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#037972',
     marginBottom: 20,
   },
   input: {
     marginBottom: 15,
-    color: "#C4C4C4",
-    backgroundColor: "#FFFFFF",
-    width: "100%",
+    color: '#C4C4C4',
+    backgroundColor: '#FFFFFF',
+    width: '100%',
   },
   forgotPasswordText: {
-    color: "#2F76E1",
+    color: '#2F76E1',
     marginTop: 20,
   },
   loginButton: {
-    backgroundColor: "#004E49",
+    backgroundColor: '#004E49',
     paddingVertical: 5,
     borderRadius: 30,
-    width: "100%",
+    width: '100%',
     marginTop: 10,
   },
   registerContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 20,
   },
   registerText: {
-    color: "#2F76E1",
-    fontWeight: "bold",
+    color: '#2F76E1',
+    fontWeight: 'bold',
   },
 });

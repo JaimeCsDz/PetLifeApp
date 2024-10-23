@@ -1,0 +1,1 @@
+export type IAuthStatus = "authenticated" | "unauthenticated" | "checking";
