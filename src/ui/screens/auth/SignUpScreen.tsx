@@ -166,6 +166,10 @@ export const SignUpScreen = ({ navigation }: Props) => {
             <TouchableOpacity onPress={() => navigation.navigate('SignInScreen')}>
               <Text style={styles.loginText}>¿Ya tienes una cuenta?</Text>
             </TouchableOpacity>
+              <Image
+              source={require("../../../assets/gato.png")}
+              style={styles.bottomImage}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -246,8 +250,8 @@ const styles = StyleSheet.create({
   },
   bottomImage: {
     position: "absolute",
-    bottom: -110,
-    right: -54,
+    bottom: -125,
+    right: -50,
     width: 190,
     height: 190,
     zIndex: -999999999

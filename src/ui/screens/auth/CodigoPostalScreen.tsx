@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, TextInput, Button, HelperText } from 'react-native-paper';
@@ -150,16 +151,18 @@ export const CodigoPostal = ({ navigation }: Props) => {
             <TextInput
               label="Contraseña"
               mode="outlined"
+              textColor='#C4C4C4'
               secureTextEntry={hidePass}
               outlineColor="#C4C4C4"
               activeOutlineColor="#037972"
               placeholder="********"
               placeholderTextColor="#C4C4C4"
-              left={<TextInput.Icon icon="lock" />}
+              left={<TextInput.Icon icon="lock" color={'#C4C4C4'}/>}
               right={
                 <TextInput.Icon
                   icon={hidePass ? 'eye-outline' : 'eye-off-outline'}
                   onPress={() => setHidePass(!hidePass)}
+                  color={'#C4C4C4'}
                 />
               }
               style={styles.input}
@@ -216,6 +219,7 @@ export const CodigoPostal = ({ navigation }: Props) => {
             <Button
               mode="outlined"
               onPress={handleRegister}
+              textColor="#00635D"
               disabled={!isFormValid}
               style={styles.registerButton}
             >
@@ -225,6 +229,10 @@ export const CodigoPostal = ({ navigation }: Props) => {
             <TouchableOpacity onPress={() => navigation.navigate('SignInScreen')}>
               <Text style={styles.loginText}>¿Ya tienes una cuenta?</Text>
             </TouchableOpacity>
+              <Image
+              source={require("../../../assets/cp.png")}
+              style={styles.bottomImage}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -233,9 +241,19 @@ export const CodigoPostal = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
-  keyboardAvoidingContainer: { flex: 1 },
-  scrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FFF' 
+  },
+  keyboardAvoidingContainer: { 
+    flex: 1 
+  },
+  scrollContent: { 
+    flexGrow: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingVertical: 40 
+  },
   formContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -258,11 +276,43 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginBottom: 15,
   },
-  picker: { height: 50, color: '#000' },
-  input: { marginBottom: 15, width: '100%', backgroundColor: '#fff' },
-  registerButton: { paddingVertical: 4, borderRadius: 30, width: '100%', marginTop: 20 },
-  title: { fontSize: 30, fontWeight: 'bold', color: '#037972', marginBottom: 20, textAlign: 'center' },
-  loginText: { marginTop: 20, color: '#2F76E1', textDecorationLine: 'underline' },
+  picker: { 
+    height: 50, 
+    color: '#000' 
+  },
+  input: { 
+
+    marginBottom: 15, 
+    width: '100%', 
+    backgroundColor: '#fff' 
+  },
+  registerButton: { 
+    paddingVertical: 4, 
+    borderRadius: 30, 
+    width: '100%', 
+    marginTop: 20, 
+    borderColor: '#00635D'
+  },
+  title: { 
+    fontSize: 30, 
+    fontWeight: 'bold', 
+    color: '#037972', 
+    marginBottom: 20, 
+    textAlign: 'center' 
+  },
+  loginText: { 
+    marginTop: 20, 
+    color: '#2F76E1', 
+    textDecorationLine: 'underline' 
+  },
+  bottomImage: {
+    position: "absolute",
+    bottom: -135,
+    right: -40,
+    width: 220,
+    height: 220,
+    zIndex: -999999999
+  },
 });
 
 export default CodigoPostal;
