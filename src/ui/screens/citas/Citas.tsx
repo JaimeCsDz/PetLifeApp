@@ -18,16 +18,13 @@ export const Citas = ({ visible }: any) => {
         { id: '3', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
         { id: '4', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
         { id: '5', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '6', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '7', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '8', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
     ]);
 
     // Renderizar citas
     const renderCita = ({ item }: any) => (
-        <SafeAreaView style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-            <Card style={styles.card}>
-                <View style={styles.cardContent}>
+        <SafeAreaView className="justify-center items-center flex-1 bg-white">
+            <Card style={styles.card} className="m-2.5 p-2.5 rounded-2xl h-44 w-[90%]">
+                <View  className="flex-row justify-between items-center p-2">
                     <View style={styles.cardLeft}>
                         <Text style={styles.motivoText}>{item.motivo}</Text>
                         <View style={styles.detailRow}>
@@ -88,7 +85,12 @@ export const Citas = ({ visible }: any) => {
                         data={citas}
                         renderItem={renderCita}
                         keyExtractor={(item: any) => item.id}
-                        ListHeaderComponent={<Text style={styles.header}>Historial de citas médicas</Text>}
+                        ListHeaderComponent={
+                            <View style={styles.headerContainer}>
+                                <Text style={styles.headerTitle}>Agregar Cita</Text>
+                                <Text style={styles.headerSubtitle}>Historial de citas médicas</Text>
+                            </View>
+                        }
                         onScroll={handleScroll} 
                         scrollEventThrottle={16}
                     />
@@ -103,7 +105,7 @@ export const Citas = ({ visible }: any) => {
                 visible={visible}
                 animateFrom={'right'}
                 iconMode={'dynamic'}
-                
+                pointerEvents={isExtended ? 'auto' : 'box-none'}
                 style={styles.fabStyle}
             />
         </>
@@ -112,19 +114,8 @@ export const Citas = ({ visible }: any) => {
 
 const styles = StyleSheet.create({
     card: {
-        margin: 10,
-        padding: 10,
         backgroundColor: '#fff',
-        borderRadius: 20,
         elevation: 2,
-        height: 170,
-        width: '90%'
-    },
-    cardContent: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 5
     },
     cardLeft: {
         flex: 3,
@@ -174,7 +165,7 @@ const styles = StyleSheet.create({
     },
     cardActions: {
         justifyContent: 'flex-end',
-        marginTop: -30
+        marginTop: -30,
     },
     image: {
         height: 120,
@@ -207,5 +198,20 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 16,
         bottom: 16,
+    },
+    headerContainer: {
+        padding: 20,
+        alignItems: 'center',
+        backgroundColor: '#FFF', 
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#00635D',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: '#656464',
+        marginTop: 5,
     },
 });
