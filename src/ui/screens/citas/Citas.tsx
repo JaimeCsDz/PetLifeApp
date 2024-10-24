@@ -15,12 +15,6 @@ export const Citas = ({ visible }: any) => {
     const [citas, setCitas] = useState([
         { id: '1', motivo: 'Chequeo general', mascota: 'Fibby', lugar: 'Cancún, Quintana Roo', fecha: '17/02/2010 - 02:20 PM', veterinaria: 'Veterinaria Santa Fe', estado: 'Pendiente', imagen: require("../../../assets/gato.png") },
         { id: '2', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '3', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '4', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '5', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '6', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '7', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
-        { id: '8', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
     ]);
 
     // Renderizar citas
@@ -67,7 +61,7 @@ export const Citas = ({ visible }: any) => {
 
     return (
         <>
-            <SafeAreaView style={{ flex: 1,  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
+            <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, }}>
                 {citas.length === 0 ? (
                     <View style={styles.container}>
                         <Image
@@ -103,7 +97,6 @@ export const Citas = ({ visible }: any) => {
                 visible={visible}
                 animateFrom={'right'}
                 iconMode={'dynamic'}
-                
                 style={styles.fabStyle}
             />
         </>
@@ -118,7 +111,9 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         elevation: 2,
         height: 170,
-        width: '90%'
+        width: '90%',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
     },
     cardContent: {
         flexDirection: 'row',
@@ -136,9 +131,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     motivoText: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginBottom: 5,
         color: '#00635D',
     },
     detailRow: {
@@ -153,18 +148,18 @@ const styles = StyleSheet.create({
     },
     estado: {
         padding: 5,
-        borderRadius: 10,
+        borderRadius: 12,
         fontSize: 12,
         textAlign: 'center',
-        marginTop: -20
+        marginTop: 10,
     },
     estadoPendiente: {
-        backgroundColor: '#FFFF00',
+        backgroundColor: '#FFFF8D',
         color: '#000',
     },
     estadoCompletado: {
-        backgroundColor: '#00C853',
-        color: '#fff',
+        backgroundColor: '#C8E6C9',
+        color: '#388E3C',
     },
     avatar: {
         backgroundColor: '#FFF',
