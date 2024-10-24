@@ -7,7 +7,6 @@ import { InicioScreen } from '../screens/inicio/InicioScreen';
 import { CodigoPostal } from '../screens/auth/CodigoPostalScreen';
 import { FormCitasScreen } from '../screens/citas/FormCitasScreen';
 import { CategoryNewsScreen } from '../screens/dashboard/CategoryNewsScreen';
-import { Citas } from "../screens/citas/Citas";
 
 export type RootStackParams = {
     LoadingScreen: undefined;
@@ -17,7 +16,6 @@ export type RootStackParams = {
     HomeScreen: undefined;
     CodigoPostal: undefined;
     FormCitasScreen: undefined;
-    Citas: undefined;
     CategoryNewsScreen: {category:string};
 };
 
@@ -26,7 +24,7 @@ const Stack = createNativeStackNavigator<RootStackParams>();
 export const StackNavigator = () => {
     return (
         <Stack.Navigator
-        initialRouteName="Citas"
+        initialRouteName="InicioScreen"
         screenOptions={{ headerShown: false }}
         >
         <Stack.Screen
@@ -41,7 +39,6 @@ export const StackNavigator = () => {
         <Stack.Screen name="CodigoPostal" component={CodigoPostal} />
         <Stack.Screen name="FormCitasScreen" component={FormCitasScreen}/>
         <Stack.Screen name="CategoryNewsScreen" component={CategoryNewsScreen}/>
-        <Stack.Screen name="Citas" component={Citas}/>
 
         </Stack.Navigator>
     );
