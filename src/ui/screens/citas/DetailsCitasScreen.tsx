@@ -27,6 +27,7 @@ export const DetailsCitasScreen = () => {
             onPress={() => navigation.goBack()}
             iconColor="#00635D"
             size={25}
+            style={{marginLeft: -5}}
           />
           <Text style={styles.title}>Detalles</Text>
         </View>
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
         color: '#00635D',
         flex: 1,
         textAlign: 'center',
-        marginRight: 50,
+        marginRight: 55,
     },
     petInfo: {
         flexDirection: 'row',
