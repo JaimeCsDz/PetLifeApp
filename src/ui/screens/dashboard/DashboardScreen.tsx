@@ -46,7 +46,7 @@ export const DashboardScreen = () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
         if (token) {
-          const decoded: any = decodeJWT(token); // Usa la función manual para decodificar
+          const decoded: any = decodeJWT(token);
           console.log('Datos del token decodificado:', decoded);
   
           setNombre(decoded.nombre || '');
