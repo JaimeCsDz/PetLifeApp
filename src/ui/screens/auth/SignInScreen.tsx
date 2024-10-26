@@ -18,6 +18,9 @@ import { authLogin } from '../../../actions/auth/auth';
 import { IAuthRequest } from '../../../interfaces';
 import { LoadingScreen } from '../../screens/loading/LoadingScreen';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 interface Props extends StackScreenProps<RootStackParams, 'SignInScreen'> {}
 
 export const SignInScreen = ({ navigation }: Props) => {
@@ -79,6 +82,9 @@ export const SignInScreen = ({ navigation }: Props) => {
       const response = await authLogin(authRequest);
 
       if (response.isSuccess) {
+        const { token } = response.data;
+        console.log(token)
+        await AsyncStorage.setItem('userToken', token);
         navigation.navigate('HomeScreen');
       } else {
         Alert.alert('Error', response.message || 'Credenciales incorrectas');
