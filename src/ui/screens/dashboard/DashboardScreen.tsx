@@ -5,7 +5,7 @@ import { TextInput, Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import jwt_decode from 'jwt-decode'; // Importación correcta
+import jwt_decode from 'jwt-decode';
 
 import { CardCategory } from "./CardCategory";
 import { CardInformation } from "./CardInformation";
@@ -13,8 +13,8 @@ import { fetchNoticiasMascotas, IArticle } from "../../../actions/dashboard/dash
 
 interface DecodedToken {
   nombre: string;
-  apellido: string;
-}
+  apPaterno: string;
+  apMaterno: string;}
 
 export const DashboardScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('pets');
@@ -24,14 +24,31 @@ export const DashboardScreen = () => {
   const [nombre, setNombre] = useState<string>(''); 
   const [apellido, setApellido] = useState<string>(''); 
 
+  const decodeJWT = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
+      return null;
+    }
+  };
+  
   useEffect(() => {
     const getUserDataFromToken = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
         if (token) {
-          // Decodificar el token JWT
-          const decoded: DecodedToken = jwt_decode(token);
+          const decoded: any = decodeJWT(token); // Usa la función manual para decodificar
           console.log('Datos del token decodificado:', decoded);
+  
           setNombre(decoded.nombre || '');
           setApellido(decoded.apellido || '');
         }
@@ -39,9 +56,12 @@ export const DashboardScreen = () => {
         console.error('Error al obtener datos del token:', error);
       }
     };
-
+  
     getUserDataFromToken();
   }, []);
+  
+  
+
 
   const handleCategoryPress = (category: string) => {
     setSelectedCategory(category);

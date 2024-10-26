@@ -34,18 +34,15 @@ export default function App() {
     });
   }, []);
 
-  if (isLoading || !fontsLoaded) {
-    return <LoadingScreen />;
-  }
 
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer>
-        {/* <AuthProvider> */}
+        <AuthProvider>
           <GestureHandlerRootView style={{ flex: 1 }}> 
             <StackNavigator />
           </GestureHandlerRootView>
-        {/* </AuthProvider> */}
+        </AuthProvider>
       </NavigationContainer>
     </PaperProvider>
   );

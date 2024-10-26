@@ -55,25 +55,20 @@ export const CodigoPostal = ({ navigation }: Props) => {
     fetchData();
   }, []);
 
-  // Funciones de cambio para los inputs
-  const onChangeEmail = (email: string) => {
-    setEmail(email);
-    if (isEmailTouched) {
-      setEmailError(!validateEmail(email));
-    }
-  };
-
-  const onChangePassword = (password: string) => {
-    setPassword(password);
-    if (isPasswordTouched) {
-      setPasswordError(!validatePassword(password));
-    }
-  };
-
-  const onChangePostalCode = (code: string) => {
-    setPostalCode(code);
-    if (isPostalCodeTouched) {
-      setPostalCodeError(!validatePostalCode(code));
+  const decodeJWT = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
+      return null;
     }
   };
 
@@ -89,12 +84,13 @@ export const CodigoPostal = ({ navigation }: Props) => {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       // Recuperar datos almacenados de la primera vista
       const storedData = await AsyncStorage.getItem('@userData');
       const userData = storedData ? JSON.parse(storedData) : {};
 
-      // Agregar los nuevos datos a los que se guardaron previamente
       const finalData: IPersonaAPI = {
         ...userData,
         correo: email,
@@ -105,17 +101,32 @@ export const CodigoPostal = ({ navigation }: Props) => {
 
       const response = await authRegister(finalData);
 
-      if (response.isSuccess) {
-        Alert.alert('Éxito', 'Registro completado');
-        navigation.navigate('HomeScreen');
+      if (response.isSuccess && response.data?.token) {
+        const { token } = response.data;
+
+        // Almacena el token en AsyncStorage
+        await AsyncStorage.setItem('userToken', token);
+
+        // Decodifica el token para obtener el nombre y apellido
+        const decoded = decodeJWT(token);
+        if (decoded) {
+          const { nombre, apPaterno, apMaterno } = decoded;
+          await AsyncStorage.setItem('@userData', JSON.stringify({ nombre, apPaterno, apMaterno }));
+
+          // Redirige a la pantalla principal
+          navigation.navigate('HomeScreen');
+        }
       } else {
         Alert.alert('Error', response.message || 'Ocurrió un error durante el registro');
       }
     } catch (error) {
       console.error('Error en la solicitud de registro:', error);
       Alert.alert('Error', 'Ocurrió un error durante el registro.');
+    } finally {
+      setIsLoading(false);
     }
   };
+
 
   const isFormValid = email && password && postalCode && selectedGender && !emailError && !PasswordError && !postalCodeError;
 
@@ -141,7 +152,7 @@ export const CodigoPostal = ({ navigation }: Props) => {
               style={styles.input}
               value={email}
               onBlur={() => setIsEmailTouched(true)}
-              onChangeText={onChangeEmail}
+              onChangeText={setEmail}
               error={emailError && isEmailTouched}
             />
             {emailError && isEmailTouched && (
@@ -168,7 +179,7 @@ export const CodigoPostal = ({ navigation }: Props) => {
               style={styles.input}
               value={password}
               onBlur={() => setIsPasswordTouched(true)}
-              onChangeText={onChangePassword}
+              onChangeText={setPassword}
               error={PasswordError && isPasswordTouched}
             />
             {PasswordError && isPasswordTouched && (
@@ -193,7 +204,7 @@ export const CodigoPostal = ({ navigation }: Props) => {
               style={styles.input}
               value={postalCode}
               onBlur={() => setIsPostalCodeTouched(true)}
-              onChangeText={onChangePostalCode}
+              onChangeText={setPostalCode}
               error={postalCodeError && isPostalCodeTouched}
             />
             {postalCodeError && isPostalCodeTouched && (
