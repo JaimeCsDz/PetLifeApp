@@ -13,7 +13,7 @@ export const Citas = ({ visible }: any) => {
 
     // Simulación de citas
     const [citas, setCitas] = useState([
-        { id: '1', motivo: 'Chequeo general', mascota: 'Fibby', lugar: 'Cancún, Quintana Roo', fecha: '17/02/2010 - 02:20 PM', veterinaria: 'Veterinaria Santa Fe', estado: 'Pendiente', imagen: require("../../../assets/gato.png") },
+        { id: '1', motivo: 'Chequeo general', mascota: 'Fibby', lugar: 'Cancún, Quintana Roo', fecha: '17/02/2010 - 02:20 PM', veterinaria: 'Veterinaria Santa Fe', estado: 'Pendiente', imagen: require("../../../assets/gato.png") , peso:'50', altura:'1.00' },
         { id: '2', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
         { id: '3', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
         { id: '4', motivo: 'Vacunación', mascota: 'Max', lugar: 'Ciudad de México', fecha: '20/10/2023 - 10:00 AM', veterinaria: 'Veterinaria Central', estado: 'Completado', imagen: require("../../../assets/gato.png") },
@@ -50,7 +50,7 @@ export const Citas = ({ visible }: any) => {
                     </View>
                 </View>
                 <Card.Actions style={styles.cardActions}>
-                    <Button mode="text" onPress={() => { }}>Detalles</Button>
+                    <Button mode="text" onPress={() => navigation.navigate("DetailsCitasScreen", { cita: item })}>Detalles</Button>
                 </Card.Actions>
             </Card>
         </SafeAreaView>
