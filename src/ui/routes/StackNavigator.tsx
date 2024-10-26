@@ -26,7 +26,7 @@ const Stack = createNativeStackNavigator<RootStackParams>();
 export const StackNavigator = () => {
     return (
         <Stack.Navigator
-        initialRouteName="FormMascota"
+        initialRouteName="InicioScreen"
         screenOptions={{ headerShown: false }}
         >
         <Stack.Screen

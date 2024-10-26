@@ -41,11 +41,11 @@ export default function App() {
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer>
-        {/* <AuthProvider> */}
+        <AuthProvider>
           <GestureHandlerRootView style={{ flex: 1 }}> 
             <StackNavigator />
           </GestureHandlerRootView>
-        {/* </AuthProvider> */}
+        </AuthProvider>
       </NavigationContainer>
     </PaperProvider>
   );
