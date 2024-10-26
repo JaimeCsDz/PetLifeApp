@@ -13,10 +13,10 @@ export const CardInformation = ({ articles, isLoading }: { articles: any[], isLo
                         <View style={styles.content}>
                             <View style={styles.leftContent}>
                                 <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-                                    {item.title}
+                                    {item.titulo}
                                 </Text>
                                 <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
-                                    {item.description}
+                                    {item.descripcion}
                                 </Text>
                                 <View style={styles.buttonContainer}>
                                     <Button
@@ -30,7 +30,7 @@ export const CardInformation = ({ articles, isLoading }: { articles: any[], isLo
                                     </Button>
                                 </View>
                             </View>
-                            <Image source={{ uri: item.urlToImage || 'https://via.placeholder.com/100' }} style={styles.image} />
+                            <Image source={{ uri: item.UrlImagen || 'https://via.placeholder.com/100' }} style={styles.image} />
                         </View>
                     </Card>
                 ))

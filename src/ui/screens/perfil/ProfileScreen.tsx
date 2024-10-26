@@ -10,6 +10,7 @@ import { VacunaModal } from './VacunasModal';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { RootStackParams } from '../../routes/StackNavigator';
+import FormMascota from './FormMascota';
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
@@ -32,6 +33,10 @@ export const ProfileScreen = () => {
         })
     }
 
+    const AddProfile = () => {
+        navigation.navigate('FormMascota')
+        closeMenu();
+    };
     const handlePerfil = () => {
         
         closeMenu();
@@ -52,7 +57,7 @@ export const ProfileScreen = () => {
                     }
                 >
                     <Menu.Item
-                        onPress={handlePerfil}
+                        onPress={AddProfile}
                         title="Agregar mascota"
                         leadingIcon={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" />}
                         titleStyle={styles.menuItemText}
