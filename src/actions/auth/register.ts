@@ -10,7 +10,7 @@ export const authRegister = async (authRequest: IPersonaAPI): Promise<ResponseHe
     if (res.status === 200 && res.data.message === 'Usuario registrado exitosamente.') {
       response.isSuccess = true;
       response.message = res.data.message;
-      response.data = res.data.token;
+      response.data = res.data;
     } else {
       response.isSuccess = false;
       response.message = res.data.message || 'Error durante el registro.';

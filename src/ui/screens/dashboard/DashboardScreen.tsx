@@ -4,37 +4,84 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CardCategory } from "./CardCategory";
 import { CardInformation } from "./CardInformation";
 import { fetchNoticiasMascotas } from "../../../actions/dashboard/dashboard";
 import { IDashboard } from '../../../interfaces/dashboard/IDashboard';
 
+interface DecodedToken {
+  nombre: string;
+  apPaterno: string;
+  apMaterno: string;}
+
 export const DashboardScreen = () => {
-    const [selectedCategory, setSelectedCategory] = useState<string>('pets');
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [articles, setArticles] = useState<IDashboard[]>([]); 
-    const [searchTerm, setSearchTerm] = useState<string>(''); 
+  const [selectedCategory, setSelectedCategory] = useState<string>('pets');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [articles, setArticles] = useState<IDashboard[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>(''); 
+  const [nombre, setNombre] = useState<string>(''); 
+  const [apellido, setApellido] = useState<string>(''); 
 
-    const handleCategoryPress = (category: string) => {
-        setSelectedCategory(category);
+  const decodeJWT = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
+      return null;
+    }
+  };
+  
+  useEffect(() => {
+    const getUserDataFromToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (token) {
+          const decoded: any = decodeJWT(token);
+          console.log('Datos del token decodificado:', decoded);
+  
+          setNombre(decoded.nombre || '');
+          setApellido(decoded.apellido || '');
+        }
+      } catch (error) {
+        console.error('Error al obtener datos del token:', error);
+      }
     };
+  
+    getUserDataFromToken();
+  }, []);
+  
+  
 
-    useEffect(() => {
-        const fetchArticles = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetchNoticiasMascotas();
-                if (response.length > 0) {
-                    setArticles(response);
-                }
-            } catch (error) {
-                console.error("Error fetching articles:", error);
+
+  const handleCategoryPress = (category: string) => {
+    setSelectedCategory(category);
+  };
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetchNoticiasMascotas();
+            if (response.length > 0) {
+                setArticles(response);
             }
-            setIsLoading(false);
-        };
-        
-        fetchArticles();
-    }, [selectedCategory]);
+        } catch (error) {
+            console.error("Error fetching articles:", error);
+        }
+        setIsLoading(false);
+    };
+    
+    fetchArticles();
+}, [selectedCategory]);
 
     const handleSearch = async () => {
         if (searchTerm) {
@@ -49,14 +96,14 @@ export const DashboardScreen = () => {
         }
     };
 
-    return (
-        <SafeAreaView className='flex-1'>
-            <View className="pl-6 pt-5 flex-row items-center justify-between pr-6">
-                <Text className='text-2xl'>
-                    Hola, <Text style={{fontWeight: "bold"}}>Javier Can</Text>
-                </Text>
-                <Icon name='notifications-none' size={30} />
-            </View>
+  return (
+    <SafeAreaView className='flex-1'>
+      <View className="pl-6 pt-5 flex-row items-center justify-between pr-6">
+        <Text className='text-2xl'>
+          Hola, <Text style={{ fontWeight: "bold" }}>{nombre} {apellido}</Text>
+        </Text>
+        <Icon name='notifications-none' size={30} />
+      </View>
 
             {/* Barra de búsqueda */}
             <View className='pt-5 pl-5 flex-row align-middle justify-between'>

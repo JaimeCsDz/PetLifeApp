@@ -34,9 +34,6 @@ export default function App() {
     });
   }, []);
 
-  if (isLoading || !fontsLoaded) {
-    return <LoadingScreen />;
-  }
 
   return (
     <PaperProvider theme={theme}>

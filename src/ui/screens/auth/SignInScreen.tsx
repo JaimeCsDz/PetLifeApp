@@ -17,6 +17,8 @@ import { Icon } from 'react-native-paper';
 import { authLogin } from '../../../actions/auth/auth';
 import { IAuthRequest } from '../../../interfaces';
 import { LoadingScreen } from '../../screens/loading/LoadingScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 interface Props extends StackScreenProps<RootStackParams, 'SignInScreen'> {}
 
@@ -75,10 +77,13 @@ export const SignInScreen = ({ navigation }: Props) => {
         Correo: email,
         Contraseña: password,
       };
-
+  
       const response = await authLogin(authRequest);
-
-      if (response.isSuccess) {
+  
+      if (response.isSuccess && response.data?.token) {
+        const { token } = response.data;
+        console.log(token);
+        await AsyncStorage.setItem('userToken', token);
         navigation.navigate('HomeScreen');
       } else {
         Alert.alert('Error', response.message || 'Credenciales incorrectas');
@@ -86,10 +91,12 @@ export const SignInScreen = ({ navigation }: Props) => {
     } catch (error) {
       console.error('Error en la autenticación', error);
       Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
-    }finally {
+    } finally {
       setIsLoading(false);
     }
   };
+  
+  
 
   if (isLoading) {
     return <LoadingScreen />;
