@@ -9,6 +9,8 @@ import { CardCategory } from "./CardCategory";
 import { CardInformation } from "./CardInformation";
 import { fetchNoticiasMascotas } from "../../../actions/dashboard/dashboard";
 import { IDashboard } from '../../../interfaces/dashboard/IDashboard';
+import { Buffer } from 'buffer';
+
 
 interface DecodedToken {
   nombre: string;
@@ -27,18 +29,15 @@ export const DashboardScreen = () => {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
-          .join('')
-      );
+      
+      const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
       return JSON.parse(jsonPayload);
     } catch (error) {
       console.error('Error al decodificar el token:', error);
       return null;
     }
   };
+  
   
   useEffect(() => {
     const getUserDataFromToken = async () => {

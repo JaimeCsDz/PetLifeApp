@@ -18,6 +18,8 @@ import { getGeneros } from '../../../actions/genero/genero';
 import { authRegister } from '../../../actions/auth/register';
 import { IGeneroDto, IPersonaAPI } from '../../../interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Buffer } from 'buffer';
+
 
 interface Props extends StackScreenProps<RootStackParams, 'CodigoPostal'> {}
 
@@ -59,18 +61,16 @@ export const CodigoPostal = ({ navigation }: Props) => {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
-          .join('')
-      );
+      
+      // Decodificar el token usando Buffer en lugar de atob
+      const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
       return JSON.parse(jsonPayload);
     } catch (error) {
       console.error('Error al decodificar el token:', error);
       return null;
     }
   };
+  
 
   // Funciones de validación
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
