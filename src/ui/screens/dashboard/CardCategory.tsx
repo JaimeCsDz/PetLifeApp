@@ -6,19 +6,19 @@ export const CardCategory = ({ onCategoryPress }: { onCategoryPress: (categoryId
     return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.categoryContainer}>
-                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('8a255581-627f-406d-a092-e50728b2f679')}>
+                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('257db116-c888-45f5-878d-6dee4805707b')}>
                     <Text style={styles.textito}>Gato</Text>
                     <Image source={require("../../../assets/gato1.png")} style={styles.image} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('5e1fef23-e895-48bf-b7eb-f32c8e1866c2')}>
+                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('7fb84b22-e055-4547-94ee-001dc49de60d')}>
                     <Text style={styles.textito}>Perro</Text>
                     <Image source={require("../../../assets/perro.png")} style={styles.image} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('24655ae9-9d17-4268-9c5a-83d8e6628cc4')}>
+                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('5dd5bb65-7067-4639-84cb-39a56c73df31')}>
                     <Text style={styles.textito}>Pájaro</Text>
                     <Image source={require("../../../assets/pajaro.png")} style={styles.image} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('5fb62235-4ef8-4a48-8ce2-efae9e2a061c')}>
+                <TouchableOpacity style={styles.category} onPress={() => onCategoryPress('fb1bed89-f344-4bc0-924f-67105a7b404a')}>
                     <Text style={styles.textito}>Pez</Text>
                     <Image source={require("../../../assets/pez.png")} style={styles.image} />
                 </TouchableOpacity>
