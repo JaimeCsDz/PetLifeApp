@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView } from 'react-native-gesture-handler';
-import { SafeAreaView, View, Text, Image, StyleSheet } from 'react-native';
-import { Appbar, Card, Button, Menu, Divider } from 'react-native-paper';
+import { ScrollView, SafeAreaView, View, Text, Image, StyleSheet } from 'react-native';
+import { Appbar, Card, Button, Menu, Divider, List } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../../store/useAuthStore';
@@ -11,14 +10,17 @@ import { IMascotas } from '../../../interfaces/Mascota/IMascota';
 import { VacunaModal } from './VacunasModal';
 import { VacunasScreen } from './VacunasScreen';
 import { TrofeosScreen } from './TrofeosScreen';
+import { ActivityIndicator } from 'react-native';
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
-    const [mascotas, setMascotas] = useState<IMascotas[]>([]);
-    const [loading, setLoading] = useState(true);
     const [menuVisible, setMenuVisible] = useState(false);
+    const [expandirSubmenu, setExpandirSubmenu] = useState(false);
+    const [mascotas, setMascotas] = useState<IMascotas[]>([]);
+    const [mascotaActiva, setMascotaActiva] = useState<IMascotas | null>(null);
+    const [loading, setLoading] = useState(true);
     const [razas, setRazas] = useState<{ [key: string]: string }>({});
-    const { userId,  } = useAuthStore();
+    const { userId } = useAuthStore();
     const navigation = useNavigation<NavigationProp<RootStackParams>>();
 
     const showModal = () => setVisible(true);
@@ -40,6 +42,11 @@ export const ProfileScreen = () => {
         closeMenu();
     };
 
+    const handleSelectMascota = (mascota: IMascotas) => {
+        setMascotaActiva(mascota);
+        closeMenu();
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             if (!userId) return;
@@ -55,6 +62,10 @@ export const ProfileScreen = () => {
             }, {} as { [key: string]: string });
             setRazas(razasMap);
 
+            if (result.data && result.data.length > 0) {
+                setMascotaActiva(result.data[0]);
+            }
+
             setLoading(false);
         };
 
@@ -62,7 +73,11 @@ export const ProfileScreen = () => {
     }, [userId]);
 
     if (loading) {
-        return <View style={styles.content}><Text style={styles.loadingText}>Cargando...</Text></View>
+        return  (
+            <View className='flex-1 justify-center items-center bg-white'>
+                <ActivityIndicator animating={true} color={'#00635D'} size="large" />
+            </View>
+        );
     }
 
     return (
@@ -82,12 +97,27 @@ export const ProfileScreen = () => {
                         titleStyle={styles.menuItemText}
                     />
                     <Divider style={styles.divider} />
-                    <Menu.Item
-                        onPress={AddProfile}
+
+                    {/* Menú desplegable para "Cambiar perfil" */}
+                    <List.Accordion
                         title="Cambiar perfil"
-                        leadingIcon={() => <MaterialCommunityIcons name="account-convert" size={20} color="#fff" />}
+                        expanded={expandirSubmenu}
+                        onPress={() => setExpandirSubmenu(!expandirSubmenu)}
+                        left={() => <MaterialCommunityIcons name="dog" size={22} color="#fff" style={{marginLeft: 10, marginTop:5}} />}
                         titleStyle={styles.menuItemText}
-                    />
+                        style={[styles.accordion,{paddingVertical: 5}]}
+                    >
+                        {mascotas.map((mascota) => (
+                            <List.Item
+                                key={mascota.id}
+                                title={mascota.nombreMascota}
+                                onPress={() => handleSelectMascota(mascota)}
+                                left={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" style={{marginLeft:10}}/>}
+                                titleStyle={styles.menuItemText}
+                            />
+                        ))}
+                    </List.Accordion>
+
                     <Divider style={styles.divider} />
                     <Menu.Item
                         onPress={handleLogOut}
@@ -99,31 +129,29 @@ export const ProfileScreen = () => {
             </Appbar.Header>
 
             <ScrollView contentContainerStyle={styles.scrollView}>
-                {Array.isArray(mascotas) && mascotas.length === 0 ? (
-                    <Text style={styles.noMascotasText}>No tienes mascotas registradas.</Text>
+                {mascotaActiva ? (
+                    <React.Fragment>
+                        <Image source={{ uri: mascotaActiva.fotoMascota }} style={styles.image} />
+                        <Card style={styles.card}>
+                            <Card.Content>
+                                <Text style={styles.title}>{razas[mascotaActiva.idRazaMascota] || 'Sin raza'}</Text>
+                                <View style={styles.row}>
+                                    <MaterialCommunityIcons name="paw" size={20} color="#757575" />
+                                    <Text style={styles.subtitle}>{mascotaActiva.nombreMascota}</Text>
+                                </View>
+                                <View style={styles.row}>
+                                    <MaterialCommunityIcons name="calendar" size={20} color="#757575" />
+                                    <Text style={styles.subtitle}>{mascotaActiva.fechaNacimiento}</Text>
+                                </View>
+                                <View style={styles.row}>
+                                    <MaterialCommunityIcons name="information" size={20} color="#757575" />
+                                    <Text style={styles.subtitle}>{mascotaActiva.peso} Kg, {mascotaActiva.altura} CM</Text>
+                                </View>
+                            </Card.Content>
+                        </Card>
+                    </React.Fragment>
                 ) : (
-                    mascotas.map((mascota) => (
-                            <React.Fragment key={mascota.id}>
-                                <Image source={{ uri: mascota.fotoMascota}} style={styles.image} />
-                                <Card style={styles.card}>
-                                    <Card.Content>
-                                        <Text style={styles.title}>{razas[mascota.idRazaMascota] || 'Sin raza'}</Text>
-                                        <View style={styles.row}>
-                                            <MaterialCommunityIcons name="paw" size={20} color="#757575" />
-                                            <Text style={styles.subtitle}>{mascota.nombreMascota}</Text>
-                                        </View>
-                                        <View style={styles.row}>
-                                            <MaterialCommunityIcons name="calendar" size={20} color="#757575" />
-                                            <Text style={styles.subtitle}>{mascota.fechaNacimiento}</Text>
-                                        </View>
-                                        <View style={styles.row}>
-                                            <MaterialCommunityIcons name="information" size={20} color="#757575" />
-                                            <Text style={styles.subtitle}>{mascota.peso} Kg, {mascota.altura} CM</Text>
-                                        </View>
-                                    </Card.Content>
-                                </Card>
-                            </React.Fragment>
-                    ))
+                    <Text style={styles.noMascotasText}>Selecciona una mascota para ver su perfil.</Text>
                 )}
                 <View style={styles.contenedor}>
                     <Text style={styles.vacunasText}>
@@ -144,6 +172,7 @@ export const ProfileScreen = () => {
         </SafeAreaView>
     );
 };
+
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
@@ -251,5 +280,8 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 200,
         resizeMode: 'cover',
+    },
+    accordion: {
+        backgroundColor: '#333',
     },
 });

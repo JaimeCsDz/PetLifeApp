@@ -1,7 +1,7 @@
 import { IRaza } from "./IRaza";
 
 export interface IMascotas{
-    id: string;
+    id?: string;
     fotoMascota: string,
     nombreMascota: string,
     peso: number,

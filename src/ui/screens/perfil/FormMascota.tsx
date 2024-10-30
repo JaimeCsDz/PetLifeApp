@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Image, TouchableOpacity, View, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Image, TouchableOpacity, View, StyleSheet, Alert } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native";
 import { Appbar, Button, Menu, TextInput, Text } from 'react-native-paper';
@@ -7,6 +7,12 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from "@react-navigation/native";
 import { RootStackParams } from '../../routes/StackNavigator';
+import { getRaza, getTipoMascota, getGeneros, registerMasc} from '../../../actions/profile/profile'
+import { useAuthStore } from "../../../store/useAuthStore";
+import { IMascotas } from "../../../interfaces/Mascota/IMascota";
+import { IRaza } from "../../../interfaces/Mascota/IRaza";
+import { ITipoMascota } from "../../../interfaces/Mascota/ITipoMascota";
+import { IGenero } from "../../../interfaces/Mascota/IGenero";
 
 export const FormMascota = () => {
     const [nombreMascota, setNombreMascota] = useState('');
@@ -21,24 +27,31 @@ export const FormMascota = () => {
     const [raza, setRaza] = useState('');
     const [visibleRaza, setVisibleRaza] = useState(false);
     const [image, setImage] = useState('')
+    const [razas, setRazas] = useState<IRaza[]>([]);
+    const [tiposMascotas, setTiposMascota] = useState<ITipoMascota[]>([]);
+    const [Generos, setGeneros] = useState<IGenero[]>([]);
+
     const navigation = useNavigation()
+    const { userId,  } = useAuthStore();
+    if (!userId) {
+        console.error("Error: El id del usuario no está definido.");
+        return;
+    }
 
-    const generos = [
-        { label: 'Hembra', value: 'hembra' },
-        { label: 'Macho', value: 'macho' },
-        { label: 'Otro', value: 'otro' },
-    ];
 
-    const tiposMascota = [
-        { label: 'Perro', value: 'perro' },
-        { label: 'Gato', value: 'gato' },
-        { label: 'Hamster', value: 'hamster' },
-        { label: 'Otro', value: 'otro' },
-    ];
-
-    const Razas = [
-        {label: 'Labrador', value: 'labrador'}
-    ]
+    useEffect(() => {
+        const fetchData = async () => {
+            const razaData = await getRaza();
+            setRazas(razaData);
+    
+            const tipoMascotaData = await getTipoMascota();
+            setTiposMascota(tipoMascotaData);
+    
+            const generoData = await getGeneros();
+            setGeneros(generoData);
+        };
+        fetchData();
+    }, []);
 
     const selectImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -60,6 +73,34 @@ export const FormMascota = () => {
             setFechaNacimiento(formattedDate);
         }
     };
+
+    const handleRegister = async () => {
+        if(!nombreMascota || !peso || !altura || !fechaNacimiento || !genero){
+            Alert.alert('Aviso', 'Debes completar todos los campos')
+            return
+        }
+
+        try {
+            const data: IMascotas = {
+                idUsuario: userId,
+                nombreMascota: nombreMascota,
+                altura:  parseFloat(altura),
+                fechaNacimiento: new Date(fechaNacimiento).toISOString(),
+                peso: parseFloat(peso),
+                idGenero: genero,
+                idRazaMascota: raza,
+                idTipoMascota: tipoMascota,
+                fotoMascota: image
+            }
+            console.log("Datos a enviar:", data);
+            const response = await registerMasc(data)
+            if(response.isSuccess && response.data){
+                Alert.alert("Mascota creada correctamente")
+            }
+        } catch (error) {
+            console.log("Ocurrio un error al guardar la mascota", error)
+        }
+    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -142,14 +183,14 @@ export const FormMascota = () => {
                         </Button>
                     }
                 >
-                    {generos.map((item) => (
+                    {Generos.map((item) => (
                         <Menu.Item
-                            key={item.value}
+                            key={item.id}
                             onPress={() => {
-                                setGenero(item.label);
+                                setGenero(item.id);
                                 setVisibleGenero(false);
                             }}
-                            title={item.label}
+                            title={item.genero} 
                         />
                     ))}
                 </Menu>
@@ -164,14 +205,14 @@ export const FormMascota = () => {
                         </Button>
                     }
                 >
-                    {tiposMascota.map((item) => (
+                    {tiposMascotas.map((item) => (
                         <Menu.Item
-                            key={item.value}
+                            key={item.id}
                             onPress={() => {
-                                setTipoMascota(item.label);
+                                setTipoMascota(item.id);
                                 setVisibleTipoMascota(false);
                             }}
-                            title={item.label}
+                            title={item.tipo}
                         />
                     ))}
                 </Menu>
@@ -187,21 +228,21 @@ export const FormMascota = () => {
                         </Button>
                     }
                 >
-                    {Razas.map((item) => (
+                    {razas.map((item) => (
                         <Menu.Item
-                            key={item.value}
+                            key={item.id}
                             onPress={() => {
-                                setRaza(item.label);
+                                setRaza(item.id);
                                 setVisibleRaza(false);
                             }}
-                            title={item.label}
+                            title={item.razaMascota}
                         />
                     ))}
                 </Menu>
 
                 <Button
                     mode="contained"
-                    onPress={() => {}}
+                    onPress={handleRegister}
                     style={{ backgroundColor: '#00635D', marginTop: 20 }}
                 >
                     Registrar Mascota

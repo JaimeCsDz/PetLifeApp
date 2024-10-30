@@ -25,7 +25,7 @@ export const ResourceScreen = () => {
                     activeOutlineColor="#ABB7C2"
                     mode="outlined"
                     outlineColor="#ABB7C2"
-                    style={{width: '70%'}}
+                    style={{width: '73%'}}
                     theme={{roundness: 10}}
                     right={
                         <TextInput.Icon

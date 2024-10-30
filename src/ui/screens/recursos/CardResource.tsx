@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Image, Linking } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
 
 const data = [
@@ -9,6 +9,8 @@ const data = [
         description: 'Organización de protección de animales en Cancún',
         label: 'Gobierno',
         image: require('../../../assets/descarga.jpg'),
+        telefono: 9984815254,
+        url: 'https://www.facebook.com/DireccionProteccionBienestarAnimal/?locale=es_LA'
     },
     {
         id: 2,
@@ -16,6 +18,9 @@ const data = [
         description: 'Es la organización de derechos animales más grande del mundo, con más de 6.5 millones de miembros y simpatizantes. ',
         label: 'Mundial',
         image: require('../../../assets/descarga.png'),
+        telefono: 9984815254,
+        url: 'https://www.facebook.com/DireccionProteccionBienestarAnimal/?locale=es_LA'
+
     },
     {
         id: 3,
@@ -23,6 +28,9 @@ const data = [
         description: 'Agencia gubernamental encargada de la protección del medio ambiente y la fauna silvestre en México.',
         label: 'Gobierno',
         image: require('../../../assets/images.png'),
+        telefono: 9984815254,
+        url: 'https://www.facebook.com/DireccionProteccionBienestarAnimal/?locale=es_LA'
+
     },
 ];
 
@@ -45,7 +53,7 @@ export const CardResource = () => {
                     {item.description}
                 </Text>
                 <View style={styles.buttonContainer}>
-                    <Button mode="contained" textColor="#fff" style={{borderRadius: 10, width: '25%'}} buttonColor='#037972' compact={true} onPress={() => {}} >
+                    <Button mode="contained" textColor="#fff" style={{borderRadius: 10, width: '25%'}} buttonColor='#037972' compact={true} onPress={() => Linking.openURL(item.url)} >
                     Ver más
                     </Button>
                 </View>
