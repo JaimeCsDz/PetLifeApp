@@ -62,7 +62,6 @@ export const CodigoPostal = ({ navigation }: Props) => {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       
-      // Decodificar el token usando Buffer en lugar de atob
       const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
       return JSON.parse(jsonPayload);
     } catch (error) {
@@ -71,12 +70,6 @@ export const CodigoPostal = ({ navigation }: Props) => {
     }
   };
   
-
-  // Funciones de validación
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validatePassword = (password: string) =>
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
-  const validatePostalCode = (code: string) => /^\d{5}$/.test(code);
 
   const handleRegister = async () => {
     if (!email || !password || !postalCode || !selectedGender) {
@@ -87,7 +80,6 @@ export const CodigoPostal = ({ navigation }: Props) => {
     setIsLoading(true);
 
     try {
-      // Recuperar datos almacenados de la primera vista
       const storedData = await AsyncStorage.getItem('@userData');
       const userData = storedData ? JSON.parse(storedData) : {};
 
@@ -104,16 +96,13 @@ export const CodigoPostal = ({ navigation }: Props) => {
       if (response.isSuccess && response.data?.token) {
         const { token } = response.data;
 
-        // Almacena el token en AsyncStorage
         await AsyncStorage.setItem('userToken', token);
 
-        // Decodifica el token para obtener el nombre y apellido
         const decoded = decodeJWT(token);
         if (decoded) {
           const { nombre, apPaterno, apMaterno } = decoded;
           await AsyncStorage.setItem('@userData', JSON.stringify({ nombre, apPaterno, apMaterno }));
 
-          // Redirige a la pantalla principal
           navigation.navigate('HomeScreen');
         }
       } else {

@@ -18,6 +18,7 @@ import { authLogin } from '../../../actions/auth/auth';
 import { IAuthRequest } from '../../../interfaces';
 import { LoadingScreen } from '../../screens/loading/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 
 interface Props extends StackScreenProps<RootStackParams, 'SignInScreen'> {}
@@ -83,7 +84,11 @@ export const SignInScreen = ({ navigation }: Props) => {
       if (response.isSuccess && response.data?.token) {
         const { token } = response.data;
         console.log(token);
+  
         await AsyncStorage.setItem('userToken', token);
+  
+        useAuthStore.getState().login(token);
+  
         navigation.navigate('HomeScreen');
       } else {
         Alert.alert('Error', response.message || 'Credenciales incorrectas');

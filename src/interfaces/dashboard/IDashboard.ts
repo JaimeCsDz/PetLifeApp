@@ -1,8 +1,7 @@
 export interface IDashboard {
     Id: string;
-    Titulo: string;
-    Descripcion: string; 
+    titulo: string;
+    descripcion: string; 
     IdCategoria : string;
     IdTipoMascota: string;
-    IdRaza:string;
 }

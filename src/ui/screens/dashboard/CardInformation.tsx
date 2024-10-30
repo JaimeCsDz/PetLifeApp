@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Image, Linking } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
 
 export const CardInformation = ({ articles, isLoading }: { articles: any[], isLoading: boolean }) => {
@@ -23,14 +23,14 @@ export const CardInformation = ({ articles, isLoading }: { articles: any[], isLo
                                         mode="text"
                                         textColor="#4E7AD8"
                                         compact={true}
-                                        onPress={() => { /* Manejar el evento de ver más */ }}
+                                        onPress={() => Linking.openURL(item.urlSitio)}
                                         labelStyle={{ textDecorationLine: 'underline' }}
                                     >
                                         Ver más
                                     </Button>
                                 </View>
                             </View>
-                            <Image source={{ uri: item.UrlImagen || 'https://via.placeholder.com/100' }} style={styles.image} />
+                            <Image source={{ uri: item.urlImagen || 'https://via.placeholder.com/100' }} style={styles.image} />
                         </View>
                     </Card>
                 ))
@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
     image: {
         width: 100,
         height: 100,
-        borderRadius: 40,
+        borderRadius: 60,
     },
 });
