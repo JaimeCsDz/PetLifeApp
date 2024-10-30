@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Platform, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Platform, ScrollView, Alert } from 'react-native';
 import { Modal, Portal, Button, Text, Menu, TextInput } from 'react-native-paper';
 import { Calendar } from 'react-native-calendars';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { getTipoMascota } from '../../../actions/vacunas/vacunas';
+import { ITipoMascota } from '../../../interfaces/Mascota/ITipoMascota';
 
 interface VacunaModalProps {
     visible: boolean;
@@ -20,7 +22,8 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
     const [selectedDate, setSelectedDate] = useState('');
     const [time, setTime] = useState(new Date());
     const [showTimePicker, setShowTimePicker] = useState(false);
-    const [especie, setEspecie] = useState('');
+    const [especie, setEspecie] = useState<ITipoMascota[]>([]);
+    const [selectedEspecie, setSelectedEspecie] = useState<string>('');
     const [visibleEspecie, setVisibleEspecie] = useState(false);
 
     const mascotas = [
@@ -35,17 +38,28 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
         { label: 'Moquillo', value: 'moquillo' },
     ];
 
-    const especies = [
-        { label: 'Perro', value: 'perro' },
-        { label: 'Gato', value: 'gato' },
-        { label: 'Hámster', value: 'hamster' },
-    ];
-
     const status = [
         { label: 'Pendiente', value: 'pendiente' },
         { label: 'Aplicada', value: 'aplicada' },
         { label: 'Faltante', value: 'faltante' },
     ];
+    
+    useEffect(()=>{
+        const fetchTipo = async () => {
+            try {
+                const response = await getTipoMascota()
+                if(response.length > 0){
+                    setEspecie(response)
+                }else{
+                    Alert.alert("Error", "No se encontraron tipos de mascotas")
+                }
+            } catch (error) {
+                Alert.alert('Error', 'Ocurrio un error al cargar los datos')
+            }
+        }
+
+        fetchTipo()
+    }, [])
 
     const onChangeTime = (event: any, selectedTime: any) => {
         const currentTime = selectedTime || time;
@@ -73,19 +87,19 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
                                     icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
                                     labelStyle={styles.placeholderText}
                                     style={styles.Button}
-                                >
-                                    {especie ? especie : 'Selecciona la especie'}
+                                    >
+                                    {selectedEspecie ? selectedEspecie : 'Selecciona la especie'}
                                 </Button>
                             }
                         >
-                            {especies.map((item) => (
+                            {especie.map((item) => (
                                 <Menu.Item
-                                    key={item.value}
+                                    key={item.id}
                                     onPress={() => {
-                                        setEspecie(item.label);
+                                        setSelectedEspecie(item.tipo);
                                         setVisibleEspecie(false);
                                     }}
-                                    title={item.label}
+                                    title={item.tipo}
                                 />
                             ))}
                         </Menu>

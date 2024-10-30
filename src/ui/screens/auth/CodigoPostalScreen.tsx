@@ -18,6 +18,8 @@ import { getGeneros } from '../../../actions/genero/genero';
 import { authRegister } from '../../../actions/auth/register';
 import { IGeneroDto, IPersonaAPI } from '../../../interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Buffer } from 'buffer';
+
 
 interface Props extends StackScreenProps<RootStackParams, 'CodigoPostal'> {}
 
@@ -59,24 +61,15 @@ export const CodigoPostal = ({ navigation }: Props) => {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
-          .join('')
-      );
+      
+      const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
       return JSON.parse(jsonPayload);
     } catch (error) {
       console.error('Error al decodificar el token:', error);
       return null;
     }
   };
-
-  // Funciones de validación
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validatePassword = (password: string) =>
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
-  const validatePostalCode = (code: string) => /^\d{5}$/.test(code);
+  
 
   const handleRegister = async () => {
     if (!email || !password || !postalCode || !selectedGender) {
@@ -87,7 +80,6 @@ export const CodigoPostal = ({ navigation }: Props) => {
     setIsLoading(true);
 
     try {
-      // Recuperar datos almacenados de la primera vista
       const storedData = await AsyncStorage.getItem('@userData');
       const userData = storedData ? JSON.parse(storedData) : {};
 
@@ -104,16 +96,13 @@ export const CodigoPostal = ({ navigation }: Props) => {
       if (response.isSuccess && response.data?.token) {
         const { token } = response.data;
 
-        // Almacena el token en AsyncStorage
         await AsyncStorage.setItem('userToken', token);
 
-        // Decodifica el token para obtener el nombre y apellido
         const decoded = decodeJWT(token);
         if (decoded) {
           const { nombre, apPaterno, apMaterno } = decoded;
           await AsyncStorage.setItem('@userData', JSON.stringify({ nombre, apPaterno, apMaterno }));
 
-          // Redirige a la pantalla principal
           navigation.navigate('HomeScreen');
         }
       } else {
