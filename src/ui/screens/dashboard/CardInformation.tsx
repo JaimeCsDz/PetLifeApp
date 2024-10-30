@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, StyleSheet, Image, Linking } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 
 export const CardInformation = ({ articles, isLoading }: { articles: any[], isLoading: boolean }) => {
+    const navigation = useNavigation()
     return (
         <View style={styles.container}>
             {isLoading ? (
