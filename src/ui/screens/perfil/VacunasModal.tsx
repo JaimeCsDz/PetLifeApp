@@ -4,20 +4,28 @@ import { Modal, Portal, Button, Text, Menu, TextInput } from 'react-native-paper
 import { Calendar } from 'react-native-calendars';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { getTipoMascota } from '../../../actions/vacunas/vacunas';
+import { getTipoMascota, getEstatus, geVacunasTipoMascota, PostVacunasMascora } from '../../../actions/vacunas/vacunas';
 import { ITipoMascota } from '../../../interfaces/Mascota/ITipoMascota';
+import { IVacunas } from '../../../interfaces/vacunas/IVacunas';
+import { IEstatus } from '../../../interfaces/vacunas/IEstatus';
+import { IVacunaTipo } from '../../../interfaces/vacunas/IVacunaTipo';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { getMascotasByUserId } from '../../../actions/profile/profile';
+import { IMascotas } from '../../../interfaces/Mascota/IMascota';
 
 interface VacunaModalProps {
     visible: boolean;
     onDismiss: () => void;
+    onRefresh: () => void;
 }
 
-export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) => {
+export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, onRefresh }) => {
     const [veterinario, setVeterinario] = useState('');
     const [motivo, setMotivo] = useState('');
     const [notas, setNotas] = useState('');
     const [visibleVeterinario, setVisibleVeterinario] = useState(false);
     const [visibleMotivo, setVisibleMotivo] = useState(false);
+    const [estatusList, setEstatusList] = useState<IEstatus[]>([]);
     const [visibleStatus, setVisibleStatus] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [time, setTime] = useState(new Date());
@@ -25,41 +33,69 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
     const [especie, setEspecie] = useState<ITipoMascota[]>([]);
     const [selectedEspecie, setSelectedEspecie] = useState<string>('');
     const [visibleEspecie, setVisibleEspecie] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const [mascotas, setMascotas] = useState<IMascotas[]>([]);
+    const [vacunas, setVacunas] = useState<IVacunaTipo[]>([]);
 
-    const mascotas = [
-        { label: 'Mascota A', value: 'mascotaA' },
-        { label: 'Mascota B', value: 'mascotaB' },
-        { label: 'Mascota C', value: 'mascotaC' },
-    ];
+    const { userId } = useAuthStore();
 
-    const vacunas = [
-        { label: 'Rabia', value: 'rabia' },
-        { label: 'Polivalente', value: 'polivalente' },
-        { label: 'Moquillo', value: 'moquillo' },
-    ];
-
-    const status = [
-        { label: 'Pendiente', value: 'pendiente' },
-        { label: 'Aplicada', value: 'aplicada' },
-        { label: 'Faltante', value: 'faltante' },
-    ];
-    
-    useEffect(()=>{
-        const fetchTipo = async () => {
+    useEffect(() => {
+        const fetchData = async () => {
             try {
-                const response = await getTipoMascota()
-                if(response.length > 0){
-                    setEspecie(response)
-                }else{
-                    Alert.alert("Error", "No se encontraron tipos de mascotas")
+                const response = await getTipoMascota();
+                if (response.length > 0) {
+                    setEspecie(response);
+                } else {
+                    Alert.alert("Error", "No se encontraron tipos de mascotas");
                 }
             } catch (error) {
-                Alert.alert('Error', 'Ocurrio un error al cargar los datos')
+                Alert.alert('Error', 'Ocurrió un error al cargar los datos');
             }
-        }
+        };
 
-        fetchTipo()
-    }, [])
+        const fetchEstatus = async () => {
+            try {
+                const estatusData = await getEstatus();
+                setEstatusList(estatusData);
+            } catch (error) {
+                Alert.alert("Error", "No se pudo obtener los estados.");
+                console.error("Error al obtener los estados:", error);
+            }
+        };
+
+        const fetchMascotas = async () => {
+            try {
+                if (userId) {
+                    const mascotasData = await getMascotasByUserId(userId);
+                    setMascotas(mascotasData.data || []);
+                }
+            } catch (error) {
+                Alert.alert("Error", "No se pudo obtener las mascotas del usuario.");
+                console.error("Error al obtener las mascotas:", error);
+            }
+        };
+
+        fetchData();
+        fetchEstatus();
+        fetchMascotas();
+    }, [userId]);
+
+    useEffect(() => {
+        const fetchVacunas = async () => {
+            try {
+                if (selectedEspecie) {
+                    const vacunasData = await geVacunasTipoMascota(selectedEspecie);
+                    setVacunas(vacunasData);
+                    setMotivo('');
+                }
+            } catch (error) {
+                Alert.alert("Error", "No se pudieron obtener las vacunas para la especie seleccionada.");
+                console.error("Error al obtener las vacunas:", error);
+            }
+        };
+
+        fetchVacunas();
+    }, [selectedEspecie]);
 
     const onChangeTime = (event: any, selectedTime: any) => {
         const currentTime = selectedTime || time;
@@ -68,6 +104,54 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
     };
 
     const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    const handleGuardar = async () => {
+        if (!veterinario || !motivo || !selectedDate || !selectedStatus) {
+            Alert.alert("Error", "Por favor, completa todos los campos requeridos.");
+            return;
+        }
+    
+        const idMascota = mascotas.find(mascota => mascota.nombreMascota === veterinario)?.id || '';
+    
+        const vacunaSeleccionada = vacunas.find(vacuna => vacuna.id === motivo);
+        const idVacunasTipoMascota = vacunaSeleccionada ? vacunaSeleccionada.id : '';
+    
+        if (!idMascota) {
+            Alert.alert("Error", "Por favor, selecciona una mascota válida.");
+            return;
+        }
+        if (!idVacunasTipoMascota) {
+            Alert.alert("Error", "Por favor, selecciona una vacuna válida.");
+            return;
+        }
+    
+        const vacunaData: IVacunas = {
+            nombreVacuna: vacunaSeleccionada!.nombreVacuna,
+            fechaAplicacion: new Date(selectedDate).toISOString(),
+            horaAplicacion: formattedTime,
+            idStatus: selectedStatus,
+            idMascota: idMascota,
+            idVacunasTipoMascota: idVacunasTipoMascota,
+        };
+    
+        console.log('Datos a enviar:', vacunaData);
+    
+        try {
+            const response = await PostVacunasMascora(vacunaData);
+            if (response.isSuccess) {
+                Alert.alert("Éxito", "Vacuna registrada con éxito");
+                onRefresh()
+                onDismiss();
+            } else {
+                Alert.alert("Error", response.message || "No se pudo registrar la vacuna");
+            }
+        } catch (error) {
+            console.error("Error al registrar la vacuna:", error);
+            Alert.alert("Error", "Hubo un problema al registrar la vacuna");
+        }
+    };
+    
+        
 
     return (
         <Portal>
@@ -87,7 +171,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
                                     icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
                                     labelStyle={styles.placeholderText}
                                     style={styles.Button}
-                                    >
+                                >
                                     {selectedEspecie ? selectedEspecie : 'Selecciona la especie'}
                                 </Button>
                             }
@@ -96,7 +180,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
                                 <Menu.Item
                                     key={item.id}
                                     onPress={() => {
-                                        setSelectedEspecie(item.tipo);
+                                        setSelectedEspecie(item.id);
                                         setVisibleEspecie(false);
                                     }}
                                     title={item.tipo}
@@ -117,18 +201,18 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
                                     labelStyle={styles.placeholderText}
                                     style={styles.Button}
                                 >
-                                    {veterinario ? veterinario : 'Selecciona tú mascota'}
+                                    {veterinario ? veterinario : 'Selecciona tu mascota'}
                                 </Button>
                             }
                         >
                             {mascotas.map((item) => (
                                 <Menu.Item
-                                    key={item.value}
+                                    key={item.id}
                                     onPress={() => {
-                                        setVeterinario(item.label);
+                                        setVeterinario(item.nombreMascota);
                                         setVisibleVeterinario(false);
                                     }}
-                                    title={item.label}
+                                    title={item.nombreMascota}
                                 />
                             ))}
                         </Menu>
@@ -152,12 +236,12 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
                         >
                             {vacunas.map((item) => (
                                 <Menu.Item
-                                    key={item.value}
+                                    key={item.id}
                                     onPress={() => {
-                                        setMotivo(item.label);
+                                        setMotivo(item.id);
                                         setVisibleMotivo(false);
                                     }}
-                                    title={item.label}
+                                    title={item.nombreVacuna}
                                 />
                             ))}
                         </Menu>
@@ -202,18 +286,18 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
                                     labelStyle={styles.placeholderText}
                                     style={styles.Button}
                                 >
-                                    {'Selecciona el estatus'}
+                                    {selectedStatus ? selectedStatus : 'Selecciona el estatus'}
                                 </Button>
                             }
                         >
-                            {status.map((item) => (
+                            {estatusList.map((item) => (
                                 <Menu.Item
-                                    key={item.value}
+                                    key={item.id}
                                     onPress={() => {
-                                        setVeterinario(item.label);
-                                        setVisibleVeterinario(false);
+                                        setSelectedStatus(item.id);
+                                        setVisibleStatus(false);
                                     }}
-                                    title={item.label}
+                                    title={item.estatus}
                                 />
                             ))}
                         </Menu>
@@ -234,7 +318,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss }) 
                     <Button onPress={onDismiss} style={styles.closeButton} textColor="#ffffff">
                         Cerrar
                     </Button>
-                    <Button onPress={onDismiss} style={styles.closeButton} textColor="#ffffff">
+                    <Button onPress={handleGuardar} style={styles.closeButton} textColor="#ffffff">
                         Guardar
                     </Button>
                 </View>
@@ -317,7 +401,7 @@ const styles = StyleSheet.create({
         width: '100%',
         borderRadius: 10,
         marginBottom: 20,
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
     },
     botones: {
         flexDirection: 'row',

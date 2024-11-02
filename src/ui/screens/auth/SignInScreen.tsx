@@ -25,10 +25,10 @@ interface Props extends StackScreenProps<RootStackParams, 'SignInScreen'> {}
 
 export const SignInScreen = ({ navigation }: Props) => {
   const [hidePass, setHidePass] = useState<boolean>(true);
-  const [email, setEmail] = useState<string>('');
+  const [email, setEmail] = useState<string>('jaimecastaneda133@gmail.com');
   const [emailError, setEmailError] = useState<boolean>(false);
   const [isEmailTouched, setIsEmailTouched] = useState<boolean>(false);
-  const [password, setPassword] = useState<string>('');
+  const [password, setPassword] = useState<string>('PetLife2024*');
   const [PasswordError, setPasswordError] = useState<boolean>(false);
   const [isPasswordTouched, setIsPasswordTouched] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);

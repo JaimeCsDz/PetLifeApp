@@ -64,7 +64,6 @@ export const getGeneros = async (): Promise<IGenero[]> => {
 export const getRaza = async (): Promise<IRaza[]> => {
     try {
         const res = await petLifeAPI.get<IRaza[]>('/Razas');
-        console.log('Respuesta del servidor:', res.data); 
         return res.data;
     } catch (error) {
         console.error('Error en la respuesta del servidor:', error);
@@ -75,7 +74,6 @@ export const getRaza = async (): Promise<IRaza[]> => {
 export const getTipoMascota = async (): Promise<ITipoMascota[]> => {
     try {
         const res = await petLifeAPI.get<ITipoMascota[]>('/TipoMascota');
-        console.log('Respuesta del servidor:', res.data); 
         return res.data;
     } catch (error) {
         console.error('Error en la respuesta del servidor:', error);

@@ -106,6 +106,7 @@ export const DetailsCitasScreen = () => {
             mode="outlined"
             onPress={() => console.log("Guardar presionado")}
             style={styles.button}
+            labelStyle={{color: '#00635D'}}
           >
             Guardar
           </Button>
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
         color: '#00635D',
         flex: 1,
         textAlign: 'center',
-        marginRight: 55,
+        marginRight: 40,
     },
     petInfo: {
         flexDirection: 'row',
@@ -232,6 +233,6 @@ const styles = StyleSheet.create({
         marginTop: 15,
         borderRadius: 20,
         borderColor: '#00635D',
-        width: 150,
+        width: 250,
     },
 });

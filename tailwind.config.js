@@ -5,7 +5,12 @@ module.exports = {
     "./src/ui/screens/**/*.{js,jsx,ts,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors:{
+        'verde': '#00635D',
+        'gris': '#656464'
+      }
+    },
   },
   plugins: [],
 };

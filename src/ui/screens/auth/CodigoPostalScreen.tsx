@@ -103,7 +103,7 @@ export const CodigoPostal = ({ navigation }: Props) => {
           const { nombre, apPaterno, apMaterno } = decoded;
           await AsyncStorage.setItem('@userData', JSON.stringify({ nombre, apPaterno, apMaterno }));
 
-          navigation.navigate('HomeScreen');
+          navigation.navigate('SignInScreen');
         }
       } else {
         Alert.alert('Error', response.message || 'Ocurrió un error durante el registro');

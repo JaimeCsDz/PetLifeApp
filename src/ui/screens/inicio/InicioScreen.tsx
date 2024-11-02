@@ -28,7 +28,7 @@ export const InicioScreen = ({navigation}: Props) => {
                 <Text style={styles.title}>PetLife <Icon source='paw' size={40} color='#905010' /></Text>
                 </View>
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity onPress={onSignIn}><Button mode="contained" style={styles.button}>Iniciar Sesión</Button></TouchableOpacity>
+                    <TouchableOpacity onPress={onSignIn}><Button mode="contained" style={styles.button}>Iniciar sesión</Button></TouchableOpacity>
                     <TouchableOpacity onPress={onSignUp}><Button mode="outlined" style={[styles.button, styles.outlinedButton]} textColor="#00635D">Registrarse</Button></TouchableOpacity>
                 </View>
             </View>

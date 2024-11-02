@@ -249,6 +249,7 @@ const styles = StyleSheet.create({
         height: 50,
         justifyContent: 'center',
         backgroundColor: '#004E49',
+        marginBottom: 20
     },
     outlinedButton: {
         borderColor: '#004E49',

@@ -13,6 +13,8 @@ import { IMascotas } from "../../../interfaces/Mascota/IMascota";
 import { IRaza } from "../../../interfaces/Mascota/IRaza";
 import { ITipoMascota } from "../../../interfaces/Mascota/ITipoMascota";
 import { IGenero } from "../../../interfaces/Mascota/IGenero";
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../../../firebaseConfig'
 
 export const FormMascota = () => {
     const [nombreMascota, setNombreMascota] = useState('');
@@ -28,6 +30,7 @@ export const FormMascota = () => {
     const [visibleRaza, setVisibleRaza] = useState(false);
     const [image, setImage] = useState('')
     const [razas, setRazas] = useState<IRaza[]>([]);
+    const [razasFiltradas, setRazasFiltradas] = useState<IRaza[]>([]);
     const [tiposMascotas, setTiposMascota] = useState<ITipoMascota[]>([]);
     const [Generos, setGeneros] = useState<IGenero[]>([]);
 
@@ -53,6 +56,15 @@ export const FormMascota = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (tipoMascota) {
+            const razasDelTipo = razas.filter((raza) => raza.idTipoMascota === tipoMascota);
+            setRazasFiltradas(razasDelTipo);
+        } else {
+            setRazasFiltradas(razas);
+        }
+    }, [tipoMascota, razas]);
+
     const selectImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -75,32 +87,49 @@ export const FormMascota = () => {
     };
 
     const handleRegister = async () => {
-        if(!nombreMascota || !peso || !altura || !fechaNacimiento || !genero){
-            Alert.alert('Aviso', 'Debes completar todos los campos')
-            return
+        if (!nombreMascota || !peso || !altura || !fechaNacimiento || !genero) {
+            Alert.alert('Aviso', 'Debes completar todos los campos');
+            return;
         }
-
+    
         try {
+            let imageUrl = image;
+    
+            if (image.startsWith('file://')) {
+                const imageName = `${userId}_${Date.now()}.jpg`;
+    
+                const imageRef = ref(storage, `mascotas/${imageName}`);
+    
+                const response = await fetch(image);
+                const blob = await response.blob();
+    
+                await uploadBytes(imageRef, blob);
+    
+                imageUrl = await getDownloadURL(imageRef);
+            }
+    
             const data: IMascotas = {
                 idUsuario: userId,
                 nombreMascota: nombreMascota,
-                altura:  parseFloat(altura),
+                altura: parseFloat(altura),
                 fechaNacimiento: new Date(fechaNacimiento).toISOString(),
                 peso: parseFloat(peso),
                 idGenero: genero,
                 idRazaMascota: raza,
                 idTipoMascota: tipoMascota,
-                fotoMascota: image
-            }
+                fotoMascota: imageUrl
+            };
+    
             console.log("Datos a enviar:", data);
-            const response = await registerMasc(data)
-            if(response.isSuccess && response.data){
-                Alert.alert("Mascota creada correctamente")
+            const response = await registerMasc(data);
+            if (response.isSuccess && response.data) {
+                navigation.goBack()
+                Alert.alert("Mascota creada correctamente");
             }
         } catch (error) {
-            console.log("Ocurrio un error al guardar la mascota", error)
+            console.log("Ocurrió un error al guardar la mascota", error);
         }
-    }
+    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -228,7 +257,7 @@ export const FormMascota = () => {
                         </Button>
                     }
                 >
-                    {razas.map((item) => (
+                    {razasFiltradas.map((item) => (
                         <Menu.Item
                             key={item.id}
                             onPress={() => {

@@ -11,6 +11,8 @@ import { VacunaModal } from './VacunasModal';
 import { VacunasScreen } from './VacunasScreen';
 import { TrofeosScreen } from './TrofeosScreen';
 import { ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
@@ -20,7 +22,7 @@ export const ProfileScreen = () => {
     const [mascotaActiva, setMascotaActiva] = useState<IMascotas | null>(null);
     const [loading, setLoading] = useState(true);
     const [razas, setRazas] = useState<{ [key: string]: string }>({});
-    const { userId } = useAuthStore();
+    const { userId, setMascotaId } = useAuthStore();
     const navigation = useNavigation<NavigationProp<RootStackParams>>();
 
     const showModal = () => setVisible(true);
@@ -43,39 +45,116 @@ export const ProfileScreen = () => {
     };
 
     const handleSelectMascota = (mascota: IMascotas) => {
-        setMascotaActiva(mascota);
-        closeMenu();
+        if (mascota.id) {
+            setMascotaActiva(mascota);
+            setMascotaId(mascota.id); 
+            closeMenu();
+            console.log(mascota.id)
+        } else {
+            console.error("El ID de la mascota es undefined.");
+        }
     };
+    const refreshData = async () => {
+        if (!userId) return;
+        setLoading(true);
+
+        const result = await getMascotasByUserId(userId);
+        setMascotas(Array.isArray(result.data) ? result.data : []);
+
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        refreshData()
+    }, []);
+
 
     useEffect(() => {
         const fetchData = async () => {
             if (!userId) return;
             setLoading(true);
-
-            const result = await getMascotasByUserId(userId);
-            setMascotas(Array.isArray(result.data) ? result.data : []);
-
-            const razasResult = await getRaza();
-            const razasMap = razasResult.reduce((acc, raza) => {
-                acc[raza.id] = raza.razaMascota;
-                return acc;
-            }, {} as { [key: string]: string });
-            setRazas(razasMap);
-
-            if (result.data && result.data.length > 0) {
-                setMascotaActiva(result.data[0]);
+    
+            try {
+                const result = await getMascotasByUserId(userId);
+                const mascotasObtenidas = Array.isArray(result.data) ? result.data : [];
+                setMascotas(mascotasObtenidas);
+    
+                if (mascotasObtenidas.length > 0) {
+                    const primeraMascota = mascotasObtenidas[0];
+                    setMascotaActiva(primeraMascota);
+    
+                    if (primeraMascota.id) {
+                        setMascotaId(primeraMascota.id);
+                        console.log("Mascota ID inicializada:", primeraMascota.id);
+                    } else {
+                        console.error("El ID de la primera mascota es undefined.");
+                    }
+                } else {
+                    setMascotaActiva(null);
+                }
+            } catch (error) {
+                console.error("Error al obtener mascotas:", error);
+            } finally {
+                setLoading(false);
             }
-
-            setLoading(false);
         };
-
+    
         fetchData();
     }, [userId]);
+    
+    useFocusEffect(
+        React.useCallback(() => {
+            const fetchData = async () => {
+                if (!userId) return;
+                setLoading(true);
+    
+                const result = await getMascotasByUserId(userId);
+                setMascotas(Array.isArray(result.data) ? result.data : []);
+    
+                const razasResult = await getRaza();
+                const razasMap = razasResult.reduce((acc, raza) => {
+                    acc[raza.id] = raza.razaMascota;
+                    return acc;
+                }, {} as { [key: string]: string });
+                setRazas(razasMap);
+    
+                if (result.data && result.data.length > 0) {
+                    setMascotaActiva(result.data[0]);
+                }
+    
+                setLoading(false);
+            };
+    
+            fetchData();
+        }, [userId])
+    );
+    
 
     if (loading) {
         return  (
             <View className='flex-1 justify-center items-center bg-white'>
                 <ActivityIndicator animating={true} color={'#00635D'} size="large" />
+            </View>
+        );
+    }
+
+    if (!loading && !mascotaActiva) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Image
+                    source={require("../../../assets/dog-gum.png")}
+                    className='h-32 w-32'
+                />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: 'gray', marginTop: 8 }}>
+                    Aún no cuentas con un perfil 🐶
+                </Text>
+                <Button
+                    mode="contained"
+                    style={{ marginTop: 16, borderRadius: 8, backgroundColor: '#00635D' }}
+                    onPress={() => navigation.navigate("FormMascota")}
+                >
+                    Crear mascota
+                </Button>
             </View>
         );
     }
@@ -168,7 +247,7 @@ export const ProfileScreen = () => {
                     <TrofeosScreen />
                 </View>
             </ScrollView>
-            <VacunaModal visible={visible} onDismiss={hideModal} /> 
+            <VacunaModal visible={visible} onDismiss={hideModal} onRefresh={refreshData}/> 
         </SafeAreaView>
     );
 };

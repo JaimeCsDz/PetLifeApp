@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Image, Linking } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
 
-const data = [
+export const data = [
     {
         id: 1,
         title: 'Protección animal',
@@ -30,11 +30,49 @@ const data = [
         image: require('../../../assets/images.png'),
         telefono: 9984815254,
         url: 'https://www.facebook.com/DireccionProteccionBienestarAnimal/?locale=es_LA'
-
+    },
+    {
+        id: 4,
+        title: 'Dejando Huella por Cancún A.C',
+        description: 'Asociación civil que se encarga del rescate y adopción de perros y gatos en Cancún.',
+        label: 'Asociación',
+        image: require('../../../assets/Logo-Fundacion-Dejando-Huellas-por-Cancun-A.C.webp'),
+        telefono: '99888701062',
+        url: 'https://dejandohuellascancun.org/'
+    },
+    {
+        id: 5,
+        title: 'Fundación Huellitas Aleman',
+        description: 'Persona independiente que se encarga del rescate, rehabilitación y adopción de perros en Cancún.',
+        label: 'Asociación',
+        image: require('../../../assets/orlandoaleman-1080x630.jpeg'),
+        telefono: '99888701062',
+        url: 'https://www.instagram.com/fundacionhuellitasaleman/?hl=es'
+    },
+    {
+        id: 6,
+        title: 'Tierra de animales',
+        description: 'Alberga cerca de 500 animales de distintas especies, en su gran mayoría perros y perras rescatados del abandono en las calles',
+        label: 'Asociación',
+        image: require('../../../assets/logo-tierra.png'),
+        telefono: '99888701062',
+        url: 'https://www.instagram.com/tierradeanimales/?hl=es'
     },
 ];
 
-export const CardResource = () => {
+interface CardResourceProps {
+    data: {
+        id: number;
+        title: string;
+        description: string;
+        label: string;
+        image: any;
+        telefono: string | number;
+        url: string;
+    }[];
+}
+
+export const CardResource: React.FC<CardResourceProps> = ({ data }) => {
     return (
         <View style={styles.container}>
         {data.map((item) => (
@@ -111,7 +149,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         fontSize: 12,
         height: 30,
-        width: 55,
+        width: 85,
         textAlign: 'center',
     },
     title: {

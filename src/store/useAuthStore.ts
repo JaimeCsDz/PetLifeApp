@@ -9,6 +9,7 @@ export const useAuthStore = create<IAuthState>((set) => ({
     userId: null,
     nombre: null,
     apellido: null,
+    mascotaId: null,
 
     login: (token: string) => {
         set({
@@ -66,5 +67,8 @@ export const useAuthStore = create<IAuthState>((set) => ({
         } catch (error) {
             console.error('Error al decodificar el token:', error);
         }
+    },
+    setMascotaId: (id: string) => {
+        set({ mascotaId: id });
     },
 }));
