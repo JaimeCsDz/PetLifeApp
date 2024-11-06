@@ -1,7 +1,8 @@
 export interface ICitas{
+    id?: string,
     fecha: string;
     hora: string
-    notaAdicional: string;
+    notaAdicional?: string;
     idUser: string;
     idMotivoCita: string;
     idMascota: string;

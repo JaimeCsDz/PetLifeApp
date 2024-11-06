@@ -19,7 +19,6 @@ export const VacunasScreen = () => {
                     setVacunas(response);
                 } else {
                     console.warn("mascotaId no está disponible. No se realizará la llamada a la API.");
-                    // Puedes mostrar una alerta o manejar el caso donde no hay mascota seleccionada
                 }
             } catch (error) {
                 Alert.alert("Error", "Ocurrió un error al obtener las vacunas.");

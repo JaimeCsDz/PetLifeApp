@@ -1,23 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TextInput, ScrollView } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { Avatar, Text, IconButton, Button } from 'react-native-paper';
-import MapView from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { RootStackParams } from "../../routes/StackNavigator";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { getVeterinarias } from '../../../actions/citas/citas';
 
 const profileImage = require('../../../assets/Profile.jpg');
 type DetailsCitasScreenProp = RouteProp<RootStackParams, 'DetailsCitasScreen'>;
 
 export const DetailsCitasScreen = () => {
-    const [notas, setNotas] = useState('');
-    const route = useRoute<DetailsCitasScreenProp>();
-    const navigation = useNavigation();
-    const { cita }: any = route.params;
+  const [notas, setNotas] = useState('');
+  const route = useRoute<DetailsCitasScreenProp>();
+  const navigation = useNavigation();
+  const [latitud, setLatitud] = useState(0);
+  const [longitud, setLongitud] = useState(0);
+  const { cita }: any = route.params;
 
-    const [fecha, hora] = cita.fecha ? cita.fecha.split(" - ") : ["Fecha no disponible", "Hora no disponible"];
+  useEffect(() => {
+    const fetchVeterinarias = async () => {
+      try {
+        const veterinarias = await getVeterinarias();
+        const veterinaria = veterinarias.find(v => v.nombre === cita.veterinaria);
+        if (veterinaria) {
+          setLatitud(veterinaria.latitud);
+          setLongitud(veterinaria.longitud);
+        } else {
+          console.error("Veterinaria no encontrada:", cita.veterinaria);
+        }
+      } catch (error) {
+        console.error("Error al obtener las veterinarias:", error);
+      }
+    };
 
-    return (
+    fetchVeterinarias();
+  }, [cita.veterinaria]);
+
+  return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View style={styles.container}>
         {/* Encabezado */}
@@ -27,22 +47,21 @@ export const DetailsCitasScreen = () => {
             onPress={() => navigation.goBack()}
             iconColor="#00635D"
             size={25}
-            style={{marginLeft: -5}}
+            style={{ marginLeft: -5 }}
           />
           <Text style={styles.title}>Detalles</Text>
         </View>
 
-        {/* Información de la mascota sin contenedor */}
+        {/* Información de la mascota */}
         <View style={styles.petInfo}>
           <Avatar.Image
             size={150}
-            source={profileImage}
+            source={{ uri: cita.fotoMascota }}
             style={styles.petImage}
           />
           <View style={styles.petDetails}>
             <Text style={styles.petName}>
-              {" "}
-              <Icon name="paw" size={30} color="#656464" /> {cita.mascota}
+              <Icon name="paw" size={30} color="#656464" /> {cita.nombreMascota}
             </Text>
             <View style={styles.attributeRow}>
               <Text style={styles.attribute}>ℹ️ {cita.peso}kg</Text>
@@ -55,7 +74,7 @@ export const DetailsCitasScreen = () => {
         <View style={styles.infoContainer}>
           <View style={styles.infoCard}>
             <Text style={styles.label}>Motivo:</Text>
-            <Text style={styles.value}>{cita.motivo}</Text>
+            <Text style={styles.value}>{cita.motivoCita}</Text>
           </View>
 
           <View style={styles.infoCard}>
@@ -68,29 +87,37 @@ export const DetailsCitasScreen = () => {
         <View style={styles.dateTimeContainer}>
           <View style={styles.dateCard}>
             <Text style={styles.label}>Fecha:</Text>
-            <Text style={styles.value}>{fecha}</Text>
+            <Text style={styles.value}>{cita.fecha.split("T")[0]}</Text>
           </View>
 
           <View style={styles.dateCard}>
             <Text style={styles.label}>Hora:</Text>
-            <Text style={styles.value}>{hora}</Text>
+            <Text style={styles.value}>{cita.hora}</Text>
           </View>
         </View>
 
         {/* Ubicación */}
         <Text style={styles.sectionTitle}>Ubicación</Text>
         <View style={styles.mapCard}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: 52.4862, // Coordenadas de ejemplo
-              longitude: -1.8904,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          />
+          {latitud !== 0 && longitud !== 0 && (
+            <MapView
+              style={styles.map}
+              region={{
+                latitude: latitud,
+                longitude: longitud,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              <Marker
+                coordinate={{ latitude: latitud, longitude: longitud }}
+                title={cita.veterinaria}
+              />
+            </MapView>
+          )}
         </View>
 
+        {/* Notas adicionales */}
         <View style={styles.container2}>
           <Text style={styles.label2}>Notas adicionales:</Text>
           <TextInput
@@ -106,15 +133,16 @@ export const DetailsCitasScreen = () => {
             mode="outlined"
             onPress={() => console.log("Guardar presionado")}
             style={styles.button}
-            labelStyle={{color: '#00635D'}}
+            labelStyle={{ color: '#00635D' }}
           >
             Guardar
           </Button>
         </View>
       </View>
-      </ScrollView>
-    );
+    </ScrollView>
+  );
 };
+
 
 const styles = StyleSheet.create({
     container: {

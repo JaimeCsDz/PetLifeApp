@@ -1,36 +1,150 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Platform } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Platform, Alert } from "react-native";
 import { Text, Button, Menu, Appbar } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Calendar } from 'react-native-calendars';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { ScrollView } from "react-native-gesture-handler";
+import { getEstatus, getMotivosByIdTipo, getTipoMascota, getVeterinarias, PostCitasMascotas } from "../../../actions/citas/citas";
+import { IVeterinaria } from "../../../interfaces/citas/IVeterinaria";
+import { ITipoMascota } from "../../../interfaces/Mascota/ITipoMascota";
+import { useAuthStore } from "../../../store/useAuthStore";
+import { getMascotasByUserId } from "../../../actions/profile/profile";
+import { IMascotas } from "../../../interfaces/Mascota/IMascota";
+import { IEstatus } from "../../../interfaces/vacunas/IEstatus";
+import { IMotivoCitas } from "../../../interfaces/citas/IMotivoCitas";
+import { ICitas } from "../../../interfaces/citas/ICitas";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParams } from "../../routes/StackNavigator";
 
 
 export const FormCitasScreen = () => {
     const [veterinario, setVeterinario] = useState('');
-    const [motivo, setMotivo] = useState('');
     const [visibleVeterinario, setVisibleVeterinario] = useState(false);
+    const [motivo, setMotivo] = useState('');
     const [visibleMotivo, setVisibleMotivo] = useState(false);
+    const [motivosList, setMotivosList] = useState<IMotivoCitas[]>([]);
+    const [veterinarias, setVeterinarias] = useState<IVeterinaria[]>([]);
+    const [especie, setEspecie] = useState<ITipoMascota[]>([]);
+    const [selectedEspecie, setSelectedEspecie] = useState<string>('');
+    const [visibleEspecie, setVisibleEspecie] = useState(false);
+    const [mascotas, setMascotas] = useState<IMascotas[]>([]);
+    const [mascota, setMascota] = useState('')
+    const [visibleMascota, setVisibleMascota ] = useState(false)
+    const [estatusList, setEstatusList] = useState<IEstatus[]>([]);
+    const [visibleStatus, setVisibleStatus] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
     const [selectedDate, setSelectedDate] = useState('');
     const [time, setTime] = useState(new Date());
     const [showTimePicker, setShowTimePicker] = useState(false);
-    const navigation = useNavigation()
 
-    const veterinarios = [
-        { label: 'Veterinario A', value: 'veterinarioA' },
-        { label: 'Veterinario B', value: 'veterinarioB' },
-        { label: 'Veterinario C', value: 'veterinarioC' },
-    ];
+    const { userId, mascotaId } = useAuthStore()
 
-    const motivos = [
-        { label: 'Consulta general', value: 'consultaGeneral' },
-        { label: 'Vacunación', value: 'vacunacion' },
-        { label: 'Emergencia', value: 'emergencia' },
-    ];
+
+    useEffect(() => {
+        const fetchVeterinarias = async () => {
+            try {
+                const data = await getVeterinarias();
+                setVeterinarias(data);
+            } catch (error) {
+                console.error("Error al cargar las veterinarias:", error);
+            }
+        };
+
+        const fetchData = async () => {
+            try {
+                const response = await getTipoMascota();
+                if (response.length > 0) {
+                    setEspecie(response);
+                } else {
+                    Alert.alert("Error", "No se encontraron tipos de mascotas");
+                }
+            } catch (error) {
+                Alert.alert('Error', 'Ocurrió un error al cargar los datos');
+            }
+        };
+
+        const fetchMascotas = async () => {
+            try {
+                if (userId) {
+                    const mascotasData = await getMascotasByUserId(userId);
+                    setMascotas(mascotasData.data || []);
+                }
+            } catch (error) {
+                Alert.alert("Error", "No se pudo obtener las mascotas del usuario.");
+                console.error("Error al obtener las mascotas:", error);
+            }
+        };
+        const fetchEstatus = async () => {
+            try {
+                const estatusData = await getEstatus();
+                setEstatusList(estatusData);
+            } catch (error) {
+                Alert.alert("Error", "No se pudo obtener los estados.");
+                console.error("Error al obtener los estados:", error);
+            }
+        };
+        
+        fetchEstatus()
+        fetchMascotas()
+        fetchData()
+        fetchVeterinarias();
+    }, []);
+
+    useEffect(() => {
+        const fetchMotivos = async () => {
+            if (selectedEspecie) {
+                try {
+                    const data = await getMotivosByIdTipo(selectedEspecie);
+                    setMotivosList(data);
+                } catch (error) {
+                    Alert.alert("Error", "No se pudo obtener los motivos de citas.");
+                    console.error("Error al obtener los motivos de citas:", error);
+                }
+            }
+        };
+
+        fetchMotivos();
+    }, [selectedEspecie]);
+
+    const formattedTime = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
+    
+    const handleGuardarCita = async () => {
+        if(!veterinario || !motivo || !selectedDate || !selectedStatus){
+            Alert.alert("Error", "Por favor completa todos los campos")
+            return
+        }
+
+        const citasData: ICitas = {
+            idMotivoCita: motivo,
+            fecha: new Date(selectedDate).toISOString(),
+            hora: formattedTime,
+            idStatus: selectedStatus,
+            idMascota: mascota,
+            idUser: userId ?? '',
+            idVeterinaria: veterinario,
+            notaAdicional: ''
+        }
+        console.log('Datos a enviar citas', citasData)
+
+        try {
+            const response = await PostCitasMascotas(citasData)
+            if(response.isSuccess){
+                Alert.alert("Exito", "Cita creada")
+                navigation.goBack()
+            }else{
+                Alert.alert('Error', response.message || 'No se pudo registrar la cita')
+            }
+        } catch (error) {
+            console.log('error al registrar la cita', error)
+        }
+    }
+
+
 
     const onChangeTime = (event:any, selectedTime:any) => {
         const currentTime = selectedTime || time;
@@ -38,7 +152,6 @@ export const FormCitasScreen = () => {
         setTime(currentTime);
     };
 
-    const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -50,36 +163,64 @@ export const FormCitasScreen = () => {
                 </Appbar.Header>
                 <Text style={styles.subtitle}>Registra las citas de tu mascota</Text>
                     <View style={styles.contenedor}>
-                    {/* Veterinario */}
-                    <Text style={styles.label}>Veterinario</Text>
+                    {/* Tipo de mascota */}
+                    <Text style={styles.label}>Especie</Text>
+                        <Menu
+                            visible={visibleEspecie}
+                            onDismiss={() => setVisibleEspecie(false)}
+                            anchor={
+                                <Button
+                                    mode="outlined"
+                                    onPress={() => setVisibleEspecie(true)}
+                                    contentStyle={styles.dropdownButton}
+                                    icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
+                                    labelStyle={styles.placeholderText}
+                                    style={styles.Button}
+                                >
+                                    {selectedEspecie ? selectedEspecie : 'Selecciona la especie'}
+                                </Button>
+                            }
+                        >
+                            {especie.map((item) => (
+                                <Menu.Item
+                                    key={item.id}
+                                    onPress={() => {
+                                        setSelectedEspecie(item.id);
+                                        setVisibleEspecie(false);
+                                    }}
+                                    title={item.tipo}
+                                />
+                            ))}
+                        </Menu>
+                    {/* mascota */}
+                    <Text style={styles.label}>Mascota</Text>
                     <Menu
-                        visible={visibleVeterinario}
-                        onDismiss={() => setVisibleVeterinario(false)}
+                        visible={visibleMascota}
+                        onDismiss={() => setVisibleMascota(false)}
                         anchor={
                             <Button
                                 mode="outlined"
-                                onPress={() => setVisibleVeterinario(true)}
+                                onPress={() => setVisibleMascota(true)}
                                 contentStyle={styles.dropdownButton}
                                 icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
                                 labelStyle={styles.placeholderText}
                                 style={styles.Button}
                             >
-                                {veterinario ? veterinario : 'Selecciona un veterinario'}
+                                {mascota ? mascota : 'Selecciona a tu mascota'}
                             </Button>
                         }
                     >
-                        {veterinarios.map((item) => (
+                        {mascotas.map((item) => (
                             <Menu.Item
-                                key={item.value}
+                                key={item.id}
                                 onPress={() => {
-                                    setVeterinario(item.label);
-                                    setVisibleVeterinario(false);
+                                    setMascota(item.id!);
+                                    setVisibleMascota(false);
                                 }}
-                                title={item.label}
+                                title={item.nombreMascota}
                             />
                         ))}
                     </Menu>
-
                     {/* Motivo */}
                     <Text style={styles.label}>Motivo</Text>
                     <Menu
@@ -98,14 +239,71 @@ export const FormCitasScreen = () => {
                             </Button>
                         }
                     >
-                        {motivos.map((item) => (
+                        {motivosList.map((item) => (
                             <Menu.Item
-                                key={item.value}
+                                key={item.id}
                                 onPress={() => {
-                                    setMotivo(item.label);
+                                    setMotivo(item.id!);
                                     setVisibleMotivo(false);
                                 }}
-                                title={item.label}
+                                title={item.motivo}
+                            />
+                        ))}
+                    </Menu>
+                    <Text style={styles.label}>Veterinario</Text>
+                    <Menu
+                        visible={visibleVeterinario}
+                        onDismiss={() => setVisibleVeterinario(false)}
+                        anchor={
+                            <Button
+                                mode="outlined"
+                                onPress={() => setVisibleVeterinario(true)}
+                                contentStyle={styles.dropdownButton}
+                                icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
+                                labelStyle={styles.placeholderText}
+                                style={styles.Button}
+                            >
+                                {veterinario ? veterinario : 'Selecciona un veterinario'}
+                            </Button>
+                        }
+                    >
+                        {veterinarias.map((item) => (
+                            <Menu.Item
+                                key={item.id}
+                                onPress={() => {
+                                    setVeterinario(item.id!);
+                                    setVisibleVeterinario(false);
+                                }}
+                                title={item.nombre}
+                            />
+                        ))}
+                    </Menu>
+                    {/* Estatus */}
+                    <Text style={styles.label}>Status</Text>
+                        <Menu
+                            visible={visibleStatus}
+                            onDismiss={() => setVisibleStatus(false)}
+                            anchor={
+                                <Button
+                                    mode="outlined"
+                                    onPress={() => setVisibleStatus(true)}
+                                    contentStyle={styles.dropdownButton}
+                                    icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
+                                    labelStyle={styles.placeholderText}
+                                    style={styles.Button}
+                                >
+                                    {selectedStatus ? selectedStatus : 'Selecciona el estatus'}
+                                </Button>
+                            }
+                        >
+                        {estatusList.map((item) => (
+                            <Menu.Item                                  
+                            key={item.id}
+                                onPress={() => {
+                                    setSelectedStatus(item.id);
+                                    setVisibleStatus(false);
+                                }}
+                                title={item.estatus}
                             />
                         ))}
                     </Menu>
@@ -157,7 +355,7 @@ export const FormCitasScreen = () => {
                         />
                     )}
                     
-                    <TouchableOpacity><Button mode="outlined" style={[styles.button, styles.outlinedButton]} textColor="#00635D">Confirmar Cita</Button></TouchableOpacity>
+                    <TouchableOpacity><Button mode="outlined" style={[styles.button, styles.outlinedButton]} textColor="#00635D" onPress={handleGuardarCita}>Confirmar cita</Button></TouchableOpacity>
                     </View>
                 </View>
             </ScrollView>
@@ -183,12 +381,11 @@ const styles = StyleSheet.create({
     },
     title: {
         flex: 1,
-        right: 25,
+        right: 35,
         textAlign: 'center',
         fontSize: 26,
         color: '#00635D',
         fontWeight: 'bold',
-        marginBottom: 10,
     },
     subtitle: {
         textAlign: 'center',
