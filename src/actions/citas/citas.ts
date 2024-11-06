@@ -66,6 +66,17 @@ export const getMotivosByIdTipo = async (idTipoMascota: string) => {
     }
 };
 
+export const updateCita = async (id:string, data: {estatu: string, notaAdicional: string}) => {
+    try {
+        const res = await petLifeAPI.put(`Cita/editar/${id}`, data)
+        console.log('respuesta del servidor: ', res.data)
+        return res.data
+    } catch (error) {
+        console.error('A ocurrido un error al editar la cita: ', error)
+        return []
+    }
+}
+
 
 export const PostCitasMascotas = async(citaData: ICitas) =>{
     const response = new ResponseHelper<ICitas>()

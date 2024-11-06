@@ -23,26 +23,37 @@ import { RootStackParams } from "../../routes/StackNavigator";
 
 export const FormCitasScreen = () => {
     const [veterinario, setVeterinario] = useState('');
+    const [veterinarioId, setVeterinarioId] = useState('');
     const [visibleVeterinario, setVisibleVeterinario] = useState(false);
+    
     const [motivo, setMotivo] = useState('');
+    const [motivoId, setMotivoId] = useState(''); 
     const [visibleMotivo, setVisibleMotivo] = useState(false);
     const [motivosList, setMotivosList] = useState<IMotivoCitas[]>([]);
+
     const [veterinarias, setVeterinarias] = useState<IVeterinaria[]>([]);
+
     const [especie, setEspecie] = useState<ITipoMascota[]>([]);
     const [selectedEspecie, setSelectedEspecie] = useState<string>('');
+    const [selectedEspecieId, setSelectedEspecieId] = useState('');
     const [visibleEspecie, setVisibleEspecie] = useState(false);
+
     const [mascotas, setMascotas] = useState<IMascotas[]>([]);
     const [mascota, setMascota] = useState('')
+    const [mascotaId, setMascotaId] = useState('');
     const [visibleMascota, setVisibleMascota ] = useState(false)
+
     const [estatusList, setEstatusList] = useState<IEstatus[]>([]);
     const [visibleStatus, setVisibleStatus] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState<string>('');
-    const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
+    const [selectedStatusId, setSelectedStatusId] = useState<string>('');
+    
     const [selectedDate, setSelectedDate] = useState('');
     const [time, setTime] = useState(new Date());
     const [showTimePicker, setShowTimePicker] = useState(false);
-
-    const { userId, mascotaId } = useAuthStore()
+    
+    const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
+    const { userId } = useAuthStore()
 
 
     useEffect(() => {
@@ -97,9 +108,9 @@ export const FormCitasScreen = () => {
 
     useEffect(() => {
         const fetchMotivos = async () => {
-            if (selectedEspecie) {
+            if (selectedEspecieId) {
                 try {
-                    const data = await getMotivosByIdTipo(selectedEspecie);
+                    const data = await getMotivosByIdTipo(selectedEspecieId);
                     setMotivosList(data);
                 } catch (error) {
                     Alert.alert("Error", "No se pudo obtener los motivos de citas.");
@@ -109,7 +120,7 @@ export const FormCitasScreen = () => {
         };
 
         fetchMotivos();
-    }, [selectedEspecie]);
+    }, [selectedEspecieId]);
 
     const formattedTime = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
     
@@ -120,13 +131,13 @@ export const FormCitasScreen = () => {
         }
 
         const citasData: ICitas = {
-            idMotivoCita: motivo,
+            idMotivoCita: motivoId,
             fecha: new Date(selectedDate).toISOString(),
             hora: formattedTime,
-            idStatus: selectedStatus,
-            idMascota: mascota,
+            idStatus: selectedStatusId,
+            idMascota: mascotaId,
             idUser: userId ?? '',
-            idVeterinaria: veterinario,
+            idVeterinaria: veterinarioId,
             notaAdicional: ''
         }
         console.log('Datos a enviar citas', citasData)
@@ -135,7 +146,7 @@ export const FormCitasScreen = () => {
             const response = await PostCitasMascotas(citasData)
             if(response.isSuccess){
                 Alert.alert("Exito", "Cita creada")
-                navigation.goBack()
+                navigation.navigate('HomeScreen')
             }else{
                 Alert.alert('Error', response.message || 'No se pudo registrar la cita')
             }
@@ -185,7 +196,8 @@ export const FormCitasScreen = () => {
                                 <Menu.Item
                                     key={item.id}
                                     onPress={() => {
-                                        setSelectedEspecie(item.id);
+                                        setSelectedEspecie(item.tipo);
+                                        setSelectedEspecieId(item.id)
                                         setVisibleEspecie(false);
                                     }}
                                     title={item.tipo}
@@ -214,7 +226,8 @@ export const FormCitasScreen = () => {
                             <Menu.Item
                                 key={item.id}
                                 onPress={() => {
-                                    setMascota(item.id!);
+                                    setMascota(item.nombreMascota)
+                                    setMascotaId(item.id!)
                                     setVisibleMascota(false);
                                 }}
                                 title={item.nombreMascota}
@@ -243,7 +256,8 @@ export const FormCitasScreen = () => {
                             <Menu.Item
                                 key={item.id}
                                 onPress={() => {
-                                    setMotivo(item.id!);
+                                    setMotivo(item.motivo)
+                                    setMotivoId(item.id!)
                                     setVisibleMotivo(false);
                                 }}
                                 title={item.motivo}
@@ -271,7 +285,8 @@ export const FormCitasScreen = () => {
                             <Menu.Item
                                 key={item.id}
                                 onPress={() => {
-                                    setVeterinario(item.id!);
+                                    setVeterinario(item.nombre);
+                                    setVeterinarioId(item.id!)
                                     setVisibleVeterinario(false);
                                 }}
                                 title={item.nombre}
@@ -279,7 +294,7 @@ export const FormCitasScreen = () => {
                         ))}
                     </Menu>
                     {/* Estatus */}
-                    <Text style={styles.label}>Status</Text>
+                    <Text style={styles.label}>Estatus</Text>
                         <Menu
                             visible={visibleStatus}
                             onDismiss={() => setVisibleStatus(false)}
@@ -300,7 +315,8 @@ export const FormCitasScreen = () => {
                             <Menu.Item                                  
                             key={item.id}
                                 onPress={() => {
-                                    setSelectedStatus(item.id);
+                                    setSelectedStatus(item.estatus);
+                                    setSelectedStatusId(item.id)
                                     setVisibleStatus(false);
                                 }}
                                 title={item.estatus}

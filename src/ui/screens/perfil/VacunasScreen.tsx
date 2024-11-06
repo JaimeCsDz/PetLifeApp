@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, StyleSheet, Alert } from "react-native";
-import { Card, Text, Button } from "react-native-paper";
+import { SafeAreaView, View, StyleSheet, Alert, FlatList, Modal } from "react-native";
+import { Card, Text, Button, Portal, Provider } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { fetchVacunasById } from "../../../actions/vacunas/vacunas";
 import { useAuthStore } from "../../../store/useAuthStore";
@@ -8,8 +8,8 @@ import { IVacunas } from "../../../interfaces/vacunas/IVacunas";
 
 export const VacunasScreen = () => {
     const [vacunas, setVacunas] = useState<IVacunas[]>([]);
+    const [showAllVacunas, setShowAllVacunas] = useState(false);
     const { mascotaId } = useAuthStore();
-    console.log("mascotaId:", mascotaId);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -29,57 +29,73 @@ export const VacunasScreen = () => {
             fetchData();
         }
     }, [mascotaId]);
-    
 
-    const getStatusStyles = (idStatus: string) => {
-        switch (idStatus) {
-            case "Aplicada":
-                return {
-                    buttonStyle: styles.statusButtonApplied,
-                    labelStyle: styles.statusButtonLabelApplied,
-                };
-            case "Pendiente":
-                return {
-                    buttonStyle: styles.statusButtonPending,
-                    labelStyle: styles.statusButtonLabelPending,
-                };
-            case "Cancelada":
-                return {
-                    buttonStyle: styles.statusButtonPending,
-                    labelStyle: styles.statusButtonLabelPending,
-                };
-        }
-    };
+    const renderVacuna = ({ item }: { item: IVacunas }) => (
+        <Card style={styles.card}>
+            <View style={styles.rowBetween}>
+                <Text style={styles.title}>{item.nombreVacuna}</Text>
+                <Button 
+                    mode="contained" 
+                    style={item.idStatus === "Aplicada" ? styles.statusButtonApplied : styles.statusButtonPending} 
+                    labelStyle={item.idStatus === "Aplicada" ? styles.statusButtonLabelApplied : styles.statusButtonLabelPending}
+                >
+                    {item.idStatus}
+                </Button>
+            </View>
+            <View style={styles.rowStart}>
+                <MaterialCommunityIcons name="clock-outline" size={20} color="#757575" />
+                <Text style={styles.subtitle}>Hora de la aplicación: {item.horaAplicacion}</Text>
+            </View>
+            <View style={styles.rowStart}>
+                <MaterialCommunityIcons name="calendar" size={20} color="#757575" />
+                <Text style={styles.subtitle}>Fecha de vacuna: {item.fechaAplicacion}</Text>
+            </View>
+        </Card>
+    );
 
     return (
-        <SafeAreaView>
-            {vacunas.length > 0 ? (
-                vacunas.map((vacuna, index) => (
-                    <Card key={index} style={styles.card}>
-                        <View style={styles.rowBetween}>
-                            <Text style={styles.title}>{vacuna.nombreVacuna}</Text>
+        <Provider>
+            <SafeAreaView>
+                {vacunas.slice(0, 5).map((vacuna, index) => (
+                    <View key={index}>{renderVacuna({ item: vacuna })}</View>
+                ))}
+
+                {vacunas.length > 5 && (
+                    <Button 
+                        mode="text" 
+                        onPress={() => setShowAllVacunas(true)} 
+                        style={styles.viewMoreButton}
+                    >
+                        Ver más
+                    </Button>
+                )}
+
+                <Portal>
+                    <Modal
+                        visible={showAllVacunas}
+                        onDismiss={() => setShowAllVacunas(false)}
+                        animationType="slide"
+                        transparent={true}
+                    >
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Todas las Vacunas</Text>
+                            <FlatList
+                                data={vacunas}
+                                renderItem={renderVacuna}
+                                keyExtractor={(item, index) => index.toString()}
+                            />
                             <Button 
-                                mode="contained" 
-                                style={vacuna.idStatus === "Aplicada" ? styles.statusButtonApplied : styles.statusButtonPending} 
-                                labelStyle={vacuna.idStatus === "Aplicada" ? styles.statusButtonLabelApplied : styles.statusButtonLabelPending}
+                                mode="text" 
+                                onPress={() => setShowAllVacunas(false)}
+                                style={styles.closeButton}
                             >
-                                {vacuna.idStatus}
+                                Cerrar
                             </Button>
                         </View>
-                        <View style={styles.rowStart}>
-                            <MaterialCommunityIcons name="clock-outline" size={20} color="#757575" />
-                            <Text style={styles.subtitle}>Hora de la aplicación: {vacuna.horaAplicacion}</Text>
-                        </View>
-                        <View style={styles.rowStart}>
-                            <MaterialCommunityIcons name="calendar" size={20} color="#757575" />
-                            <Text style={styles.subtitle}>Fecha de vacuna: {vacuna.fechaAplicacion}</Text>
-                        </View>
-                    </Card>
-                ))
-            ) : (
-                <Text style={styles.noDataText}>No se encontraron vacunas registradas.</Text>
-            )}
-        </SafeAreaView>
+                    </Modal>
+                </Portal>
+            </SafeAreaView>
+        </Provider>
     );
 };
 
@@ -110,7 +126,7 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 14,
         color: "#757575",
-        marginLeft: 5, 
+        marginLeft: 5,
     },
     statusButtonApplied: {
         backgroundColor: "#E0F8DC",
@@ -134,10 +150,26 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: "bold",
     },
-    noDataText: {
+    viewMoreButton: {
+        alignSelf: "center",
+        marginTop: 10,
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: "#fff",
+        padding: 20,
+        marginTop: 'auto',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
         textAlign: "center",
-        color: "#757575",
+        marginBottom: 20,
+    },
+    closeButton: {
+        alignSelf: "center",
         marginTop: 20,
-        fontSize: 16,
     },
 });

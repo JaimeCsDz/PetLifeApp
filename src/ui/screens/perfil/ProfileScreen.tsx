@@ -140,6 +140,52 @@ export const ProfileScreen = () => {
 
     if (!loading && !mascotaActiva) {
         return (
+            <>
+            <Appbar.Header>
+                <Appbar.Content title="Perfil" style={styles.appbarContent} titleStyle={styles.titulo} />
+                <Menu
+                    visible={menuVisible}
+                    onDismiss={closeMenu}
+                    contentStyle={styles.menuStyle}
+                    anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} color="#00635D" />}
+                >
+                    <Menu.Item
+                        onPress={AddProfile}
+                        title="Agregar mascota"
+                        leadingIcon={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" />}
+                        titleStyle={styles.menuItemText}
+                    />
+                    <Divider style={styles.divider} />
+
+                    {/* Menú desplegable para "Cambiar perfil" */}
+                    <List.Accordion
+                        title="Cambiar perfil"
+                        expanded={expandirSubmenu}
+                        onPress={() => setExpandirSubmenu(!expandirSubmenu)}
+                        left={() => <MaterialCommunityIcons name="dog" size={22} color="#fff" style={{marginLeft: 10, marginTop:5}} />}
+                        titleStyle={styles.menuItemText}
+                        style={[styles.accordion,{paddingVertical: 5}]}
+                    >
+                        {mascotas.map((mascota) => (
+                            <List.Item
+                                key={mascota.id}
+                                title={mascota.nombreMascota}
+                                onPress={() => handleSelectMascota(mascota)}
+                                left={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" style={{marginLeft:10}}/>}
+                                titleStyle={styles.menuItemText}
+                            />
+                        ))}
+                    </List.Accordion>
+
+                    <Divider style={styles.divider} />
+                    <Menu.Item
+                        onPress={handleLogOut}
+                        title="Cerrar sesión"
+                        leadingIcon={() => <MaterialCommunityIcons name="logout" size={20} color="#fff" />}
+                        titleStyle={styles.menuItemText}
+                    />
+                </Menu>
+            </Appbar.Header>
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Image
                     source={require("../../../assets/dog-gum.png")}
@@ -156,6 +202,8 @@ export const ProfileScreen = () => {
                     Crear mascota
                 </Button>
             </View>
+            </>
+
         );
     }
 
@@ -206,7 +254,6 @@ export const ProfileScreen = () => {
                     />
                 </Menu>
             </Appbar.Header>
-
             <ScrollView contentContainerStyle={styles.scrollView}>
                 {mascotaActiva ? (
                     <React.Fragment>
@@ -243,9 +290,9 @@ export const ProfileScreen = () => {
                 <View style={styles.vacunas}>
                     <VacunasScreen />
                 </View>
-                <View style={styles.trofeos}>
+                {/* <View style={styles.trofeos}>
                     <TrofeosScreen />
-                </View>
+                </View> */}
             </ScrollView>
             <VacunaModal visible={visible} onDismiss={hideModal} onRefresh={refreshData}/> 
         </SafeAreaView>

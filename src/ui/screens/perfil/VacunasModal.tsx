@@ -20,20 +20,29 @@ interface VacunaModalProps {
 }
 
 export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, onRefresh }) => {
-    const [veterinario, setVeterinario] = useState('');
-    const [motivo, setMotivo] = useState('');
+    const [vacuna, setVacuna] = useState('');
+    const [vacunaId, setVacunaId] = useState('');
+    const [visibleVacuna, setVisibleVacuna] = useState(false);
+    
     const [notas, setNotas] = useState('');
-    const [visibleVeterinario, setVisibleVeterinario] = useState(false);
-    const [visibleMotivo, setVisibleMotivo] = useState(false);
+    
+    const [mascota, setMascota] = useState('');
+    const [visibleMascota, setVisibleMascota] = useState(false);
+
     const [estatusList, setEstatusList] = useState<IEstatus[]>([]);
     const [visibleStatus, setVisibleStatus] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const [selectedStatusId, setSelectedStatusId] = useState<string>('');
+
     const [selectedDate, setSelectedDate] = useState('');
     const [time, setTime] = useState(new Date());
     const [showTimePicker, setShowTimePicker] = useState(false);
+
     const [especie, setEspecie] = useState<ITipoMascota[]>([]);
     const [selectedEspecie, setSelectedEspecie] = useState<string>('');
+    const [selectedEspecieId, setSelectedEspecieId] = useState<string>('');
     const [visibleEspecie, setVisibleEspecie] = useState(false);
-    const [selectedStatus, setSelectedStatus] = useState<string>('');
+
     const [mascotas, setMascotas] = useState<IMascotas[]>([]);
     const [vacunas, setVacunas] = useState<IVacunaTipo[]>([]);
 
@@ -83,10 +92,10 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
     useEffect(() => {
         const fetchVacunas = async () => {
             try {
-                if (selectedEspecie) {
-                    const vacunasData = await geVacunasTipoMascota(selectedEspecie);
+                if (selectedEspecieId) {
+                    const vacunasData = await geVacunasTipoMascota(selectedEspecieId);
                     setVacunas(vacunasData);
-                    setMotivo('');
+                    setVacuna('');
                 }
             } catch (error) {
                 Alert.alert("Error", "No se pudieron obtener las vacunas para la especie seleccionada.");
@@ -106,14 +115,14 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
     const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 
     const handleGuardar = async () => {
-        if (!veterinario || !motivo || !selectedDate || !selectedStatus) {
+        if (!mascota || !vacuna || !selectedDate || !selectedStatus) {
             Alert.alert("Error", "Por favor, completa todos los campos requeridos.");
             return;
         }
     
-        const idMascota = mascotas.find(mascota => mascota.nombreMascota === veterinario)?.id || '';
+        const idMascota = mascotas.find(mascotas => mascotas.nombreMascota === mascota)?.id || '';
     
-        const vacunaSeleccionada = vacunas.find(vacuna => vacuna.id === motivo);
+        const vacunaSeleccionada = vacunas.find(vacunas => vacunas.id === vacunaId);
         const idVacunasTipoMascota = vacunaSeleccionada ? vacunaSeleccionada.id : '';
     
         if (!idMascota) {
@@ -129,7 +138,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
             nombreVacuna: vacunaSeleccionada!.nombreVacuna,
             fechaAplicacion: new Date(selectedDate).toISOString(),
             horaAplicacion: formattedTime,
-            idStatus: selectedStatus,
+            idStatus: selectedStatusId,
             idMascota: idMascota,
             idVacunasTipoMascota: idVacunasTipoMascota,
         };
@@ -180,7 +189,8 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                                 <Menu.Item
                                     key={item.id}
                                     onPress={() => {
-                                        setSelectedEspecie(item.id);
+                                        setSelectedEspecie(item.tipo);
+                                        setSelectedEspecieId(item.id)
                                         setVisibleEspecie(false);
                                     }}
                                     title={item.tipo}
@@ -190,18 +200,18 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
 
                         <Text style={styles.label}>Mascota</Text>
                         <Menu
-                            visible={visibleVeterinario}
-                            onDismiss={() => setVisibleVeterinario(false)}
+                            visible={visibleMascota}
+                            onDismiss={() => setVisibleMascota(false)}
                             anchor={
                                 <Button
                                     mode="outlined"
-                                    onPress={() => setVisibleVeterinario(true)}
+                                    onPress={() => setVisibleMascota(true)}
                                     contentStyle={styles.dropdownButton}
                                     icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
                                     labelStyle={styles.placeholderText}
                                     style={styles.Button}
                                 >
-                                    {veterinario ? veterinario : 'Selecciona tu mascota'}
+                                    {mascota ? mascota : 'Selecciona tu mascota'}
                                 </Button>
                             }
                         >
@@ -209,8 +219,8 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                                 <Menu.Item
                                     key={item.id}
                                     onPress={() => {
-                                        setVeterinario(item.nombreMascota);
-                                        setVisibleVeterinario(false);
+                                        setMascota(item.nombreMascota);
+                                        setVisibleMascota(false);
                                     }}
                                     title={item.nombreMascota}
                                 />
@@ -219,18 +229,18 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
 
                         <Text style={styles.label}>Vacuna</Text>
                         <Menu
-                            visible={visibleMotivo}
-                            onDismiss={() => setVisibleMotivo(false)}
+                            visible={visibleVacuna}
+                            onDismiss={() => setVisibleVacuna(false)}
                             anchor={
                                 <Button
                                     mode="outlined"
-                                    onPress={() => setVisibleMotivo(true)}
+                                    onPress={() => setVisibleVacuna(true)}
                                     contentStyle={styles.dropdownButton}
                                     icon={() => <Icon name="arrow-drop-down" size={20} color="#656464" />}
                                     labelStyle={styles.placeholderText}
                                     style={styles.Button}
                                 >
-                                    {motivo ? motivo : 'Selecciona el tipo de vacuna'}
+                                    {vacuna ? vacuna : 'Selecciona el tipo de vacuna'}
                                 </Button>
                             }
                         >
@@ -238,8 +248,9 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                                 <Menu.Item
                                     key={item.id}
                                     onPress={() => {
-                                        setMotivo(item.id);
-                                        setVisibleMotivo(false);
+                                        setVacuna(item.nombreVacuna);
+                                        setVacunaId(item.id)
+                                        setVisibleVacuna(false);
                                     }}
                                     title={item.nombreVacuna}
                                 />
@@ -294,24 +305,14 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                                 <Menu.Item
                                     key={item.id}
                                     onPress={() => {
-                                        setSelectedStatus(item.id);
+                                        setSelectedStatus(item.estatus);
+                                        setSelectedStatusId(item.id)
                                         setVisibleStatus(false);
                                     }}
                                     title={item.estatus}
                                 />
                             ))}
                         </Menu>
-
-                        <Text style={styles.label}>Notas adicionales</Text>
-                        <TextInput
-                            mode="outlined"
-                            placeholder="Añade cualquier observación o nota"
-                            value={notas}
-                            onChangeText={setNotas}
-                            multiline
-                            numberOfLines={4}
-                            style={styles.textInput}
-                        />
                     </View>
                 </ScrollView>
                 <View style={styles.botones}>

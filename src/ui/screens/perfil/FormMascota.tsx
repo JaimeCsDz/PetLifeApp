@@ -23,10 +23,13 @@ export const FormMascota = () => {
     const [fechaNacimiento, setFechaNacimiento] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [genero, setGenero] = useState('');
+    const [generoId, setGeneroId] = useState('');
     const [visibleGenero, setVisibleGenero] = useState(false);
     const [tipoMascota, setTipoMascota] = useState('');
+    const [tipoMascotaId, setTipoMascotaId] = useState('');
     const [visibleTipoMascota, setVisibleTipoMascota] = useState(false);
     const [raza, setRaza] = useState('');
+    const [razaid, setRazaId] = useState('');
     const [visibleRaza, setVisibleRaza] = useState(false);
     const [image, setImage] = useState('')
     const [razas, setRazas] = useState<IRaza[]>([]);
@@ -57,13 +60,13 @@ export const FormMascota = () => {
     }, []);
 
     useEffect(() => {
-        if (tipoMascota) {
-            const razasDelTipo = razas.filter((raza) => raza.idTipoMascota === tipoMascota);
+        if (tipoMascotaId) {
+            const razasDelTipo = razas.filter((raza) => raza.idTipoMascota === tipoMascotaId);
             setRazasFiltradas(razasDelTipo);
         } else {
             setRazasFiltradas(razas);
         }
-    }, [tipoMascota, razas]);
+    }, [tipoMascotaId, razas]);
 
     const selectImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -114,9 +117,9 @@ export const FormMascota = () => {
                 altura: parseFloat(altura),
                 fechaNacimiento: new Date(fechaNacimiento).toISOString(),
                 peso: parseFloat(peso),
-                idGenero: genero,
-                idRazaMascota: raza,
-                idTipoMascota: tipoMascota,
+                idGenero: generoId,
+                idRazaMascota: razaid,
+                idTipoMascota: tipoMascotaId,
                 fotoMascota: imageUrl
             };
     
@@ -216,7 +219,8 @@ export const FormMascota = () => {
                         <Menu.Item
                             key={item.id}
                             onPress={() => {
-                                setGenero(item.id);
+                                setGenero(item.genero);
+                                setGeneroId(item.id)
                                 setVisibleGenero(false);
                             }}
                             title={item.genero} 
@@ -238,7 +242,8 @@ export const FormMascota = () => {
                         <Menu.Item
                             key={item.id}
                             onPress={() => {
-                                setTipoMascota(item.id);
+                                setTipoMascota(item.tipo);
+                                setTipoMascotaId(item.id)
                                 setVisibleTipoMascota(false);
                             }}
                             title={item.tipo}
@@ -261,7 +266,8 @@ export const FormMascota = () => {
                         <Menu.Item
                             key={item.id}
                             onPress={() => {
-                                setRaza(item.id);
+                                setRaza(item.razaMascota);
+                                setRazaId(item.id)
                                 setVisibleRaza(false);
                             }}
                             title={item.razaMascota}

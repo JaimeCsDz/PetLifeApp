@@ -1,22 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, StyleSheet, TextInput, ScrollView, Alert, Image } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
-import { Avatar, Text, IconButton, Button } from 'react-native-paper';
+import { Avatar, Text, IconButton, Button, Menu } from 'react-native-paper';
 import MapView, { Marker } from 'react-native-maps';
 import { RootStackParams } from "../../routes/StackNavigator";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { getVeterinarias } from '../../../actions/citas/citas';
+import Icono from 'react-native-vector-icons/MaterialIcons';
+import { getEstatus, getVeterinarias, updateCita } from '../../../actions/citas/citas';
+import { IEstatus } from '../../../interfaces/vacunas/IEstatus';
 
 const profileImage = require('../../../assets/Profile.jpg');
 type DetailsCitasScreenProp = RouteProp<RootStackParams, 'DetailsCitasScreen'>;
 
 export const DetailsCitasScreen = () => {
-  const [notas, setNotas] = useState('');
   const route = useRoute<DetailsCitasScreenProp>();
   const navigation = useNavigation();
+  const { cita }: any = route.params;
+  const [notas, setNotas] = useState(cita.notaAdicional || '');
   const [latitud, setLatitud] = useState(0);
   const [longitud, setLongitud] = useState(0);
-  const { cita }: any = route.params;
+  const [estatusList, setEstatusList] = useState<IEstatus[]>([]);
+  const [visibleStatus, setVisibleStatus] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>(cita.estatu || '');
+  const [selectedStatusId, setSelectedStatusId] = useState<string>(cita.estatuId || '');
+
 
   useEffect(() => {
     const fetchVeterinarias = async () => {
@@ -37,6 +44,31 @@ export const DetailsCitasScreen = () => {
     fetchVeterinarias();
   }, [cita.veterinaria]);
 
+  useEffect(() => {
+    const fetchEstatus = async () => {
+        try {
+            const estatusData = await getEstatus();
+            setEstatusList(estatusData);
+        } catch (error) {
+            Alert.alert("Error", "No se pudo obtener los estados.");
+            console.error("Error al obtener los estados:", error);
+        }
+    };
+    
+    fetchEstatus()
+}, []);
+
+const handleUpdateCita = async () => {
+  try {
+    await updateCita(cita.id, { estatu: selectedStatusId, notaAdicional: notas });
+    Alert.alert("Éxito", "La cita se ha actualizado correctamente.");
+    navigation.goBack();
+  } catch (error) {
+    Alert.alert("Error", "Ocurrió un error al actualizar la cita.");
+    console.error("Error al actualizar la cita:", error);
+  }
+};
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View style={styles.container}>
@@ -54,8 +86,7 @@ export const DetailsCitasScreen = () => {
 
         {/* Información de la mascota */}
         <View style={styles.petInfo}>
-          <Avatar.Image
-            size={150}
+          <Image
             source={{ uri: cita.fotoMascota }}
             style={styles.petImage}
           />
@@ -117,6 +148,36 @@ export const DetailsCitasScreen = () => {
           )}
         </View>
 
+        <Text style={styles.label2}>Estatus</Text>
+        <Menu
+                visible={visibleStatus}
+                onDismiss={() => setVisibleStatus(false)}
+                anchor={
+                  <Button
+                  mode="outlined"
+                  onPress={() => setVisibleStatus(true)}
+                  contentStyle={styles.dropdownButton}
+                  icon={() => <Icono name="arrow-drop-down" size={20} color="#656464" />}
+                  labelStyle={styles.placeholderText}
+                  style={styles.Button}
+                  >
+                    {selectedStatus || 'Selecciona el estatus'}
+                  </Button>
+                  }
+                  >
+                  {estatusList.map((item) => (
+                    <Menu.Item                                  
+                        key={item.id}
+                        onPress={() => {
+                          setSelectedStatus(item.estatus);
+                          setSelectedStatusId(item.id)
+                          setVisibleStatus(false);
+                        }}
+                        title={item.estatus}
+                            />
+                        ))}
+        </Menu>
+
         {/* Notas adicionales */}
         <View style={styles.container2}>
           <Text style={styles.label2}>Notas adicionales:</Text>
@@ -129,9 +190,11 @@ export const DetailsCitasScreen = () => {
             onChangeText={setNotas}
           />
           <Text style={styles.counter}>{`${notas.length}/100`}</Text>
+
+          
           <Button
             mode="outlined"
-            onPress={() => console.log("Guardar presionado")}
+            onPress={handleUpdateCita}
             style={styles.button}
             labelStyle={{ color: '#00635D' }}
           >
@@ -151,7 +214,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
     },
     container2: {
-        marginTop: 20,
         alignItems: 'center',
     },
     header: {
@@ -177,6 +239,8 @@ const styles = StyleSheet.create({
     petImage: {
         backgroundColor: '#FFE6BD',
         borderRadius: 16,
+        width: 150,
+        height: 150
     },
     petDetails: {
         marginLeft: 15,
@@ -207,12 +271,13 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        color: '#656464',
+        color: '#000',
+        fontWeight: 'bold'
     },
     value: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#000',
+        color: '#818181',
     },
     dateTimeContainer: {
         flexDirection: 'row',
@@ -241,7 +306,8 @@ const styles = StyleSheet.create({
     label2: {
         fontSize: 16,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginTop: 10,
+        marginBottom: 10
     },
     input: {
         height: 100,
@@ -263,4 +329,22 @@ const styles = StyleSheet.create({
         borderColor: '#00635D',
         width: 250,
     },
+    dropdownButton: {
+      flexDirection: 'row-reverse',
+      justifyContent: 'space-between',
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+      width: '100%',
+  },
+  placeholderText: {
+    color: '#656464',
+    textAlign: 'left',
+  },
+  Button: {
+      borderColor: '#CFD3D4',
+      width: '100%',
+      borderRadius: 10,
+      marginBottom: 10,
+  },
 });
