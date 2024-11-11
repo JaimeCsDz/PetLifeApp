@@ -27,6 +27,7 @@ export const useAuthStore = create<IAuthState>((set) => ({
             userId: null,
             nombre: null,
             apellido: null,
+            mascotaId: null
             });
         } catch (error) {
             console.error("Error al eliminar el token de AsyncStorage:", error);
@@ -48,6 +49,7 @@ export const useAuthStore = create<IAuthState>((set) => ({
             userId: null,
             nombre: null,
             apellido: null,
+            mascotaId: null
             });
         }
     },

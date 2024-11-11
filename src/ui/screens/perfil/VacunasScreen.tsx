@@ -1,117 +1,224 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, StyleSheet, Alert, FlatList, Modal } from "react-native";
-import { Card, Text, Button, Portal, Provider } from "react-native-paper";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { fetchVacunasById } from "../../../actions/vacunas/vacunas";
+import { View, StyleSheet, Alert, FlatList, Text, TouchableOpacity, ScrollView } from "react-native";
+import { Card, Button, Portal, Provider, Modal } from "react-native-paper";
+import { MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
+import { fetchVacunasById, getEstatus } from "../../../actions/vacunas/vacunas";
 import { useAuthStore } from "../../../store/useAuthStore";
+import { IEstatus } from "../../../interfaces/vacunas/IEstatus";
+import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { IVacunas } from "../../../interfaces/vacunas/IVacunas";
+import { deleteVacuna, getMascotasByUserId } from "../../../actions/profile/profile";
+import { VacunaModal } from "./VacunasModal";
+import { IMascotas } from '../../../interfaces/Mascota/IMascota';
 
-export const VacunasScreen = () => {
+export const VacunasScreen = ({ showAllVacunas, setShowAllVacunas, refreshData }: any) => {
     const [vacunas, setVacunas] = useState<IVacunas[]>([]);
-    const [showAllVacunas, setShowAllVacunas] = useState(false);
+    const [estatusList, setEstatusList] = useState<IEstatus[]>([]);
+    const [selectedVacuna, setSelectedVacuna] = useState<IVacunas | null>(null);
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [visible, setVisible] = useState(false);
+    const [menuVisible, setMenuVisible] = useState(false);
+    const { userId } = useAuthStore();
+    const [mascotas, setMascotas] = useState<IMascotas[]>([]);
     const { mascotaId } = useAuthStore();
+    const [loading, setLoading] = useState(true);
 
+    const hideModal = () => setVisible(false);
+
+    const fetchData = async () => {
+        if (!mascotaId) {
+            console.warn("mascotaId no está disponible. No se realizará la llamada a la API.");
+            return;
+        }
+        
+        try {
+            const response = await fetchVacunasById(mascotaId);
+            setVacunas(response);
+        } catch (error) {
+            Alert.alert("Error", "Ocurrió un error al obtener las vacunas.");
+        }
+    };
+
+    
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchEstatus = async () => {
             try {
-                if (mascotaId) {
-                    const response = await fetchVacunasById(mascotaId);
-                    setVacunas(response);
-                } else {
-                    console.warn("mascotaId no está disponible. No se realizará la llamada a la API.");
-                }
+                const estatus = await getEstatus();
+                setEstatusList(estatus);
             } catch (error) {
-                Alert.alert("Error", "Ocurrió un error al obtener las vacunas.");
+                console.error("Error fetching status:", error);
             }
         };
     
         if (mascotaId) {
             fetchData();
+            fetchEstatus();
         }
     }, [mascotaId]);
 
-    const renderVacuna = ({ item }: { item: IVacunas }) => (
-        <Card style={styles.card}>
-            <View style={styles.rowBetween}>
-                <Text style={styles.title}>{item.nombreVacuna}</Text>
-                <Button 
-                    mode="contained" 
-                    style={item.idStatus === "Aplicada" ? styles.statusButtonApplied : styles.statusButtonPending} 
-                    labelStyle={item.idStatus === "Aplicada" ? styles.statusButtonLabelApplied : styles.statusButtonLabelPending}
+    const closeModal = () => {
+        setShowAllVacunas(false);
+    };
+
+    const getEstatusNombre = (idStatus: string) => {
+        const estatus = estatusList.find((status) => status.id === idStatus);
+        return estatus ? estatus.estatus : "Desconocido";
+    };
+
+    const ultimasVacunas = vacunas.slice(-3);
+
+    const handleEdit = async(item: IVacunas) => {
+        setSelectedVacuna(item);
+        setVisible(true);   
+    };
+
+
+    const handleDelete = (item: IVacunas) => {
+        Alert.alert(
+            "Confirmar",
+            `¿Estás seguro de que deseas eliminar la vacuna ${item.nombreVacuna}?`,
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await deleteVacuna(item.id!);
+                            Alert.alert("Éxito", "La vacuna ha sido eliminada.");
+                            fetchData();
+                        } catch (error) {
+                            Alert.alert("Error", "No se pudo eliminar la vacuna.");
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
+    const EditButton = ({ onPress }: any) => (
+        <View style={styles.editAction}>
+            <TouchableOpacity style={styles.editButton} onPress={onPress}>
+                <FontAwesome5 name="edit" size={24} color="white" />
+            </TouchableOpacity>
+        </View>
+    );
+
+    const DeleteButton = ({ onPress }: any) => (
+        <View style={styles.deleteAction}>
+            <TouchableOpacity style={styles.deleteButton} onPress={onPress}>
+                <FontAwesome5 name="trash" size={24} color="white" />
+            </TouchableOpacity>
+        </View>
+    );
+
+    if(vacunas.length === 0){
+        return(
+            <View className="justify-center items-center">
+                <Text className="text-gris font-medium">No se encontraron vacunas 🐈‍⬛</Text>
+            </View>
+        )
+    }
+
+    const renderSwipeableCard = ({ item }: any) => (
+        <GestureHandlerRootView style={styles.swipeableContainer}>
+                <Swipeable
+                    renderRightActions={() => <DeleteButton onPress={() => handleDelete(item)} />}
+                    renderLeftActions={() => <EditButton onPress={() => handleEdit(item)} />}
                 >
-                    {item.idStatus}
-                </Button>
-            </View>
-            <View style={styles.rowStart}>
-                <MaterialCommunityIcons name="clock-outline" size={20} color="#757575" />
-                <Text style={styles.subtitle}>Hora de la aplicación: {item.horaAplicacion}</Text>
-            </View>
-            <View style={styles.rowStart}>
-                <MaterialCommunityIcons name="calendar" size={20} color="#757575" />
-                <Text style={styles.subtitle}>Fecha de vacuna: {item.fechaAplicacion}</Text>
-            </View>
-        </Card>
+                    <Card style={styles.card}>
+                        <View style={styles.rowBetween}>
+                            <Text style={styles.title}>{item.nombreVacuna}</Text>
+                            <Button 
+                                mode="contained" 
+                                style={
+                                    getEstatusNombre(item.idStatus) === 'Pendiente' ? styles.statusButtonPendiente
+                                    : getEstatusNombre(item.idStatus) === 'Completada' ? styles.statusButtonCompletada
+                                    : getEstatusNombre(item.idStatus) === 'En proceso' ? styles.statusButtonProceso
+                                    : styles.statusButtonDefault
+                                }
+                                labelStyle={
+                                    getEstatusNombre(item.idStatus) === 'Pendiente' ? styles.statusLabelPendiente
+                                    : getEstatusNombre(item.idStatus) === 'Completada' ? styles.statusLabelCompletada
+                                    : getEstatusNombre(item.idStatus) === 'En proceso' ? styles.statusLabelProceso
+                                    : styles.statusLabelDefault
+                                }                            
+                                >
+                                {getEstatusNombre(item.idStatus)}
+                            </Button>
+                        </View>
+                        <View style={styles.rowStart}>
+                            <MaterialCommunityIcons name="clock-outline" size={20} color="#757575" />
+                            <Text style={styles.subtitle}>Hora de la aplicación: {item.horaAplicacion}</Text>
+                        </View>
+                        <View style={styles.rowStart}>
+                            <MaterialCommunityIcons name="calendar" size={20} color="#757575" />
+                            <Text style={styles.subtitle}>Fecha de vacuna: {item.fechaAplicacion ? item.fechaAplicacion.split("T")[0] : "Fecha no disponible"}</Text>
+                        </View>
+                    </Card>
+                </Swipeable>
+        </GestureHandlerRootView>
     );
 
     return (
-        <Provider>
-            <SafeAreaView>
-                {vacunas.slice(0, 5).map((vacuna, index) => (
-                    <View key={index}>{renderVacuna({ item: vacuna })}</View>
+        <>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ width: '100%' }}>
+                {ultimasVacunas.map((item) => (
+                    <View key={item.id}>
+                        {renderSwipeableCard({ item })}
+                    </View>
                 ))}
+            </ScrollView>
 
-                {vacunas.length > 5 && (
-                    <Button 
-                        mode="text" 
-                        onPress={() => setShowAllVacunas(true)} 
-                        style={styles.viewMoreButton}
-                    >
-                        Ver más
-                    </Button>
-                )}
-
-                <Portal>
-                    <Modal
-                        visible={showAllVacunas}
-                        onDismiss={() => setShowAllVacunas(false)}
-                        animationType="slide"
-                        transparent={true}
-                    >
-                        <View style={styles.modalContainer}>
-                            <Text style={styles.modalTitle}>Todas las Vacunas</Text>
-                            <FlatList
-                                data={vacunas}
-                                renderItem={renderVacuna}
-                                keyExtractor={(item, index) => index.toString()}
-                            />
-                            <Button 
-                                mode="text" 
-                                onPress={() => setShowAllVacunas(false)}
-                                style={styles.closeButton}
-                            >
-                                Cerrar
-                            </Button>
-                        </View>
-                    </Modal>
-                </Portal>
-            </SafeAreaView>
-        </Provider>
+            <Portal>
+                <Modal visible={showAllVacunas} onDismiss={closeModal} contentContainerStyle={styles.modalContainer}>
+                    <Text style={styles.modalTitle}>Todas las Vacunas</Text>
+                    <FlatList
+                        data={vacunas}
+                        keyExtractor={(item) => item.id!.toString()}
+                        renderItem={renderSwipeableCard}
+                        contentContainerStyle={{ flexGrow: 1,}}
+                    />
+                    <Button onPress={closeModal}>Cerrar</Button>
+                </Modal>
+                <VacunaModal visible={visible} onDismiss={hideModal} onRefresh={refreshData} vacunaSeleccionada={selectedVacuna}/> 
+            </Portal>
+        </>
     );
+
 };
 
 const styles = StyleSheet.create({
-    card: {
+    swipeableContainer: {
         borderRadius: 15,
+        overflow: "hidden",
+        marginBottom: 16,
+        elevation: 5,
+        width: '100%'
+    },
+    modalContainer: {
+        backgroundColor: "white",
+        padding: 20,
+        margin: 20,
+        borderRadius: 10,
+        height: '70%',
+        width: '90%', 
+        alignSelf: 'center',
+        justifyContent: 'center',
+    },
+    card: {
         padding: 15,
         backgroundColor: "#fff",
-        elevation: 3,
-        marginBottom: 20,
+        elevation: 5,
+        width: '100%',
+        borderRadius: 15,
+        alignSelf: 'center',
+        marginBottom: 5
     },
     rowBetween: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 10,
     },
     rowStart: {
         flexDirection: "row",
@@ -120,8 +227,10 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     title: {
-        fontSize: 22,
+        fontSize: 18,
         fontWeight: "bold",
+        maxWidth: "80%",
+        flexShrink: 1,
     },
     subtitle: {
         fontSize: 14,
@@ -150,17 +259,14 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: "bold",
     },
-    viewMoreButton: {
-        alignSelf: "center",
-        marginTop: 10,
-    },
-    modalContainer: {
+    fullScreenModalContainer: {
         flex: 1,
         backgroundColor: "#fff",
         padding: 20,
-        marginTop: 'auto',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
+        marginTop: 0,
+        justifyContent: 'center'
     },
     modalTitle: {
         fontSize: 24,
@@ -172,4 +278,58 @@ const styles = StyleSheet.create({
         alignSelf: "center",
         marginTop: 20,
     },
+    editAction: {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#00635D",
+        width: 80,
+        height: "96%",
+        borderTopLeftRadius: 15,
+        borderBottomLeftRadius: 15,
+    },
+    deleteAction: {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#F44336",
+        width: 80,
+        height: "96%",
+        borderTopRightRadius: 15,
+        borderBottomRightRadius: 15,
+    },
+    editButton: {
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    deleteButton: {
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    statusButtonPendiente: {
+        backgroundColor: '#a2231d',
+    },
+    statusButtonCompletada: {
+        backgroundColor: '#00635D',
+    },
+    statusButtonProceso: {
+        backgroundColor: '#FFFF00',
+    },
+    statusButtonDefault: {
+        backgroundColor: '#E0E0E0'
+    },
+    statusLabelPendiente: {
+        color: '#fff',
+        fontSize: 12,
+    },
+    statusLabelCompletada: {
+        color: '#fff', 
+        fontSize: 12,   
+    },
+    statusLabelProceso: {
+        color: '#000',  
+        fontSize: 12,  
+    },
+    statusLabelDefault: {
+        color: '#757575',
+    },
+
 });

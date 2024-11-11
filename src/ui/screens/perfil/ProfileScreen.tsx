@@ -9,29 +9,46 @@ import { getMascotasByUserId, getRaza } from '../../../actions/profile/profile';
 import { IMascotas } from '../../../interfaces/Mascota/IMascota';
 import { VacunaModal } from './VacunasModal';
 import { VacunasScreen } from './VacunasScreen';
-import { TrofeosScreen } from './TrofeosScreen';
 import { ActivityIndicator } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { IRaza } from '../../../interfaces/Mascota/IRaza';
+import { IVacunas } from '../../../interfaces/vacunas/IVacunas';
+import { fetchVacunasById } from '../../../actions/vacunas/vacunas';
 
 
 export const ProfileScreen = () => {
     const [visible, setVisible] = useState(false);
     const [menuVisible, setMenuVisible] = useState(false);
+    const [vacunaMenuVisible, setVacunaMenuVisible] = useState(false);
     const [expandirSubmenu, setExpandirSubmenu] = useState(false);
     const [mascotas, setMascotas] = useState<IMascotas[]>([]);
+    const [showAllVacunas, setShowAllVacunas] = useState(false);
     const [mascotaActiva, setMascotaActiva] = useState<IMascotas | null>(null);
     const [loading, setLoading] = useState(true);
-    const [razas, setRazas] = useState<{ [key: string]: string }>({});
+    const [razas, setRazas] = useState<Record<string, string>>({});
     const { userId, setMascotaId } = useAuthStore();
+    const [vacunas, setVacunas] = useState<IVacunas[]>([]);
     const navigation = useNavigation<NavigationProp<RootStackParams>>();
 
-    const showModal = () => setVisible(true);
+    const showModal = () => {
+        setVisible(true);
+        closeVacunaMenu();
+    };
+    
     const hideModal = () => setVisible(false);
     const openMenu = () => setMenuVisible(true);
     const closeMenu = () => setMenuVisible(false);
+    const openVacunaMenu = () => setVacunaMenuVisible(true);
+    const closeVacunaMenu = () => setVacunaMenuVisible(false);
     const logOut = useAuthStore((x) => x.logout);
 
+    const verVacunas = () => {
+        setShowAllVacunas(true);         
+        closeVacunaMenu();
+    };
+
     const handleLogOut = () => {
+        setMascotas([]);
+        setVacunas([]);
         logOut();
         navigation.reset({
             index: 0,
@@ -49,11 +66,12 @@ export const ProfileScreen = () => {
             setMascotaActiva(mascota);
             setMascotaId(mascota.id); 
             closeMenu();
-            console.log(mascota.id)
+            console.log(mascota.id);
         } else {
             console.error("El ID de la mascota es undefined.");
         }
     };
+
     const refreshData = async () => {
         if (!userId) return;
         setLoading(true);
@@ -61,14 +79,18 @@ export const ProfileScreen = () => {
         const result = await getMascotasByUserId(userId);
         setMascotas(Array.isArray(result.data) ? result.data : []);
 
+        if (mascotaActiva?.id) {
+            const vacunasResponse = await fetchVacunasById(mascotaActiva.id);
+            setVacunas(vacunasResponse);
+        }
+
         setLoading(false);
     };
 
     useEffect(() => {
-        refreshData()
-    }, []);
-
-
+        refreshData();
+    }, [userId, mascotaActiva]);
+    
     useEffect(() => {
         const fetchData = async () => {
             if (!userId) return;
@@ -82,18 +104,20 @@ export const ProfileScreen = () => {
                 if (mascotasObtenidas.length > 0) {
                     const primeraMascota = mascotasObtenidas[0];
                     setMascotaActiva(primeraMascota);
-    
-                    if (primeraMascota.id) {
-                        setMascotaId(primeraMascota.id);
-                        console.log("Mascota ID inicializada:", primeraMascota.id);
-                    } else {
-                        console.error("El ID de la primera mascota es undefined.");
-                    }
+                    if (primeraMascota.id) setMascotaId(primeraMascota.id);
                 } else {
                     setMascotaActiva(null);
                 }
+    
+                const razasResult: IRaza[] = await getRaza();
+                const razasMap = razasResult.reduce((acc: Record<string, string>, raza: IRaza) => {
+                    acc[raza.id] = raza.razaMascota;
+                    return acc;
+                }, {} as Record<string, string>);
+                setRazas(razasMap);
+                console.log("Razas cargadas:", razasMap); 
             } catch (error) {
-                console.error("Error al obtener mascotas:", error);
+                console.error("Error al obtener datos:", error);
             } finally {
                 setLoading(false);
             }
@@ -101,45 +125,19 @@ export const ProfileScreen = () => {
     
         fetchData();
     }, [userId]);
-    
-    useFocusEffect(
-        React.useCallback(() => {
-            const fetchData = async () => {
-                if (!userId) return;
-                setLoading(true);
-    
-                const result = await getMascotasByUserId(userId);
-                setMascotas(Array.isArray(result.data) ? result.data : []);
-    
-                const razasResult = await getRaza();
-                const razasMap = razasResult.reduce((acc, raza) => {
-                    acc[raza.id] = raza.razaMascota;
-                    return acc;
-                }, {} as { [key: string]: string });
-                setRazas(razasMap);
-    
-                if (result.data && result.data.length > 0) {
-                    setMascotaActiva(result.data[0]);
-                }
-    
-                setLoading(false);
-            };
-    
-            fetchData();
-        }, [userId])
-    );
+
     
 
     if (loading) {
-        return  (
-            <View className='flex-1 justify-center items-center bg-white'>
+        return (
+            <View className='flex-1 justify-center items-center'>
                 <ActivityIndicator animating={true} color={'#00635D'} size="large" />
             </View>
         );
     }
 
-    if (!loading && !mascotaActiva) {
-        return (
+    if(mascotas.length === 0){
+        return(
             <>
             <Appbar.Header>
                 <Appbar.Content title="Perfil" style={styles.appbarContent} titleStyle={styles.titulo} />
@@ -156,27 +154,24 @@ export const ProfileScreen = () => {
                         titleStyle={styles.menuItemText}
                     />
                     <Divider style={styles.divider} />
-
-                    {/* Menú desplegable para "Cambiar perfil" */}
                     <List.Accordion
                         title="Cambiar perfil"
                         expanded={expandirSubmenu}
                         onPress={() => setExpandirSubmenu(!expandirSubmenu)}
-                        left={() => <MaterialCommunityIcons name="dog" size={22} color="#fff" style={{marginLeft: 10, marginTop:5}} />}
+                        left={() => <MaterialCommunityIcons name="dog" size={22} color="#fff" style={{ marginLeft: 10, marginTop: 5 }} />}
                         titleStyle={styles.menuItemText}
-                        style={[styles.accordion,{paddingVertical: 5}]}
+                        style={[styles.accordion, { paddingVertical: 5 }]}
                     >
                         {mascotas.map((mascota) => (
                             <List.Item
                                 key={mascota.id}
                                 title={mascota.nombreMascota}
                                 onPress={() => handleSelectMascota(mascota)}
-                                left={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" style={{marginLeft:10}}/>}
+                                left={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" style={{ marginLeft: 10 }} />}
                                 titleStyle={styles.menuItemText}
                             />
                         ))}
                     </List.Accordion>
-
                     <Divider style={styles.divider} />
                     <Menu.Item
                         onPress={handleLogOut}
@@ -186,25 +181,15 @@ export const ProfileScreen = () => {
                     />
                 </Menu>
             </Appbar.Header>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Image
-                    source={require("../../../assets/dog-gum.png")}
-                    className='h-32 w-32'
-                />
-                <Text style={{ fontSize: 14, fontWeight: '600', color: 'gray', marginTop: 8 }}>
-                    Aún no cuentas con un perfil 🐶
-                </Text>
-                <Button
-                    mode="contained"
-                    style={{ marginTop: 16, borderRadius: 8, backgroundColor: '#00635D' }}
-                    onPress={() => navigation.navigate("FormMascota")}
-                >
-                    Crear mascota
-                </Button>
+            <View style={styles.container}>
+                    <Image source={require("../../../assets/dog-gum.png")} style={styles.imagen} />
+                    <Text style={styles.tex}>Parece que no tienes mascotas registradas 🐶</Text>
+                    <Button mode="contained" style={styles.button} onPress={() => navigation.navigate("FormMascota")}>
+                        Agregar mascota
+                    </Button>
             </View>
             </>
-
-        );
+        )
     }
 
     return (
@@ -224,27 +209,24 @@ export const ProfileScreen = () => {
                         titleStyle={styles.menuItemText}
                     />
                     <Divider style={styles.divider} />
-
-                    {/* Menú desplegable para "Cambiar perfil" */}
                     <List.Accordion
                         title="Cambiar perfil"
                         expanded={expandirSubmenu}
                         onPress={() => setExpandirSubmenu(!expandirSubmenu)}
-                        left={() => <MaterialCommunityIcons name="dog" size={22} color="#fff" style={{marginLeft: 10, marginTop:5}} />}
+                        left={() => <MaterialCommunityIcons name="dog" size={22} color="#fff" style={{ marginLeft: 10, marginTop: 5 }} />}
                         titleStyle={styles.menuItemText}
-                        style={[styles.accordion,{paddingVertical: 5}]}
+                        style={[styles.accordion, { paddingVertical: 5 }]}
                     >
                         {mascotas.map((mascota) => (
                             <List.Item
                                 key={mascota.id}
                                 title={mascota.nombreMascota}
                                 onPress={() => handleSelectMascota(mascota)}
-                                left={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" style={{marginLeft:10}}/>}
+                                left={() => <MaterialCommunityIcons name="paw" size={20} color="#fff" style={{ marginLeft: 10 }} />}
                                 titleStyle={styles.menuItemText}
                             />
                         ))}
                     </List.Accordion>
-
                     <Divider style={styles.divider} />
                     <Menu.Item
                         onPress={handleLogOut}
@@ -254,9 +236,10 @@ export const ProfileScreen = () => {
                     />
                 </Menu>
             </Appbar.Header>
-            <ScrollView contentContainerStyle={styles.scrollView}>
+
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 {mascotaActiva ? (
-                    <React.Fragment>
+                    <>
                         <Image source={{ uri: mascotaActiva.fotoMascota }} style={styles.image} />
                         <Card style={styles.card}>
                             <Card.Content>
@@ -275,26 +258,39 @@ export const ProfileScreen = () => {
                                 </View>
                             </Card.Content>
                         </Card>
-                    </React.Fragment>
+                    </>
                 ) : (
                     <Text style={styles.noMascotasText}>Selecciona una mascota para ver su perfil.</Text>
                 )}
+
                 <View style={styles.contenedor}>
                     <Text style={styles.vacunasText}>
                         Control de vacunas <MaterialCommunityIcons name="needle" size={17} color="#757575" />
                     </Text>
-                    <Button style={styles.boton} mode="contained" labelStyle={styles.text} onPress={showModal}>
-                        Agregar vacuna
-                    </Button>
+                    <Menu
+                        visible={vacunaMenuVisible}
+                        onDismiss={closeVacunaMenu}
+                        anchor={
+                            <Button style={styles.boton} mode="contained" labelStyle={styles.text} onPress={openVacunaMenu}>
+                                Opciones
+                            </Button>
+                        }
+                    >
+                        <Menu.Item onPress={showModal} title="Agregar vacuna" />
+                        <Menu.Item onPress={verVacunas} title="Ver todas las vacunas" />
+                    </Menu>
                 </View>
+
                 <View style={styles.vacunas}>
-                    <VacunasScreen />
+                    <VacunasScreen  
+                        showAllVacunas={showAllVacunas}
+                        setShowAllVacunas={setShowAllVacunas}
+                        refreshData={refreshData}
+                    />
                 </View>
-                {/* <View style={styles.trofeos}>
-                    <TrofeosScreen />
-                </View> */}
             </ScrollView>
-            <VacunaModal visible={visible} onDismiss={hideModal} onRefresh={refreshData}/> 
+
+            <VacunaModal visible={visible} onDismiss={hideModal} onRefresh={refreshData} /> 
         </SafeAreaView>
     );
 };
@@ -304,6 +300,29 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#fff",
     },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff'
+    },
+    imagen: {
+        height: 120,
+        width: 120,
+        marginBottom: 0
+    },
+    tex: {
+        fontWeight: 'semibold',
+        fontSize: 15,
+        color: '#656464',
+        marginBottom: 10,
+        marginTop: 5
+    },
+    button: {
+        textAlign: 'center',
+        borderRadius: 12,
+        backgroundColor: '#00635D',
+    },
     appbarContent: {
         alignItems: "center",
         justifyContent: 'center',
@@ -312,23 +331,10 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 22,
         color: "#00635D",
-        marginRight: -30
+        marginRight: -30,
     },
-    content: {
-        justifyContent:'center',
-        alignItems: 'center'
-    },
-    scrollView: {
-        flexGrow: 1,
-        justifyContent: 'center',
+    scrollViewContent: {
         alignItems: 'center',
-    },
-    loadingText: {
-        fontSize: 18,
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-        marginTop: 20,
     },
     noMascotasText: {
         fontSize: 18,
@@ -336,11 +342,12 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
     },
-    vacunas:{   
+    vacunas: {   
         width: '90%',
-        top: 10,
+        marginTop: 10,
+        height: 'auto',
     },
-    contenedor:{
+    contenedor: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -350,22 +357,20 @@ const styles = StyleSheet.create({
     vacunasText: {
         fontSize: 15,
         color: "#656464",
-        fontWeight: 'semibold'
+        fontWeight: 'semibold',
     },
-    boton:{
+    boton: {
         backgroundColor: '#00635D',
-        width: 122,
-        borderRadius: 15,
-        height: 40
+        width: 100,
+        borderRadius: 20,
+        height: 40,
+        marginBottom: 20
     },
-    text:{
+    text: {
         fontSize: 10,
     },
-    trofeos:{
-        width: '90%'
-    },
     card: {
-        marginTop: 20,
+        marginTop: 10,
         borderRadius: 20,
         padding: 10,
         backgroundColor: '#fff',
@@ -404,7 +409,7 @@ const styles = StyleSheet.create({
     },
     image: {
         width: '100%',
-        height: 200,
+        height: 250,
         resizeMode: 'cover',
     },
     accordion: {

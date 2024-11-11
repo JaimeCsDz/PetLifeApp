@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TextInput, ScrollView, Alert, Image } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
-import { Avatar, Text, IconButton, Button, Menu } from 'react-native-paper';
+import { Text, IconButton, Button, Menu, Appbar } from 'react-native-paper';
 import MapView, { Marker } from 'react-native-maps';
 import { RootStackParams } from "../../routes/StackNavigator";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Icono from 'react-native-vector-icons/MaterialIcons';
-import { getEstatus, getVeterinarias, updateCita } from '../../../actions/citas/citas';
+import { DeleteCita, getEstatus, getVeterinarias, updateCita } from '../../../actions/citas/citas';
 import { IEstatus } from '../../../interfaces/vacunas/IEstatus';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const profileImage = require('../../../assets/Profile.jpg');
 type DetailsCitasScreenProp = RouteProp<RootStackParams, 'DetailsCitasScreen'>;
 
 export const DetailsCitasScreen = () => {
@@ -23,6 +23,11 @@ export const DetailsCitasScreen = () => {
   const [visibleStatus, setVisibleStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>(cita.estatu || '');
   const [selectedStatusId, setSelectedStatusId] = useState<string>(cita.estatuId || '');
+  const [menuVisible, setMenuVisible] = useState(false);
+
+
+  const openMenu = () => setMenuVisible(true);
+  const closeMenu = () => setMenuVisible(false);
 
 
   useEffect(() => {
@@ -69,6 +74,31 @@ const handleUpdateCita = async () => {
   }
 };
 
+const deleteCita = () => {
+  Alert.alert(
+    "Confirmar",
+    "¿Seguro que desea eliminar la cita?",
+    [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await DeleteCita(cita.id);
+            Alert.alert("Éxito", "La cita ha sido eliminada correctamente");
+            console.log('cita eliminada', cita.id)
+            navigation.goBack();
+          } catch (error) {
+            Alert.alert("Error", "Ocurrió un error al eliminar la cita");
+            console.log(error);
+          }
+        },
+      },
+    ]
+  );
+};
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View style={styles.container}>
@@ -82,6 +112,19 @@ const handleUpdateCita = async () => {
             style={{ marginLeft: -5 }}
           />
           <Text style={styles.title}>Detalles</Text>
+          <Menu
+            visible={menuVisible}
+            onDismiss={closeMenu}
+            contentStyle={styles.menuStyle}
+            anchor={<Appbar.Action icon="dots-vertical" onPress={openMenu} color="#00635D" style={{marginRight: -5}}/>}
+            >
+              <Menu.Item
+                onPress={deleteCita}
+                title="Eliminar cita"
+                leadingIcon={() => <MaterialCommunityIcons name="delete" size={25} color="#fff" />}
+                titleStyle={styles.menuItemText}
+                />
+          </Menu>
         </View>
 
         {/* Información de la mascota */}
@@ -228,7 +271,6 @@ const styles = StyleSheet.create({
         color: '#00635D',
         flex: 1,
         textAlign: 'center',
-        marginRight: 40,
     },
     petInfo: {
         flexDirection: 'row',
@@ -241,6 +283,16 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         width: 150,
         height: 150
+    },
+    menuStyle: {
+      backgroundColor: '#333',
+      borderRadius: 10,
+      paddingVertical: 5,
+      marginTop: 75,
+  },
+  menuItemText: {
+      color: '#fff',
+      fontSize: 16,
     },
     petDetails: {
         marginLeft: 15,

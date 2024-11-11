@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, ActivityIndicator, Alert } from "react-native";
+import { ScrollView, View, ActivityIndicator, Alert, KeyboardAvoidingView, Platform  } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextInput, Text, IconButton, Menu } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -27,6 +27,7 @@ export const DashboardScreen = () => {
   const [apellido, setApellido] = useState<string>(''); 
   const [visibleCategoria, setVisibleCategoria] = useState(false);
   const [categorias, setCategorias] = useState<ICategorias[]>([]);
+  const [selectedTypeCategory, setSelectedTypeCategory] = useState<string>('');
 
   const decodeJWT = (token: string) => {
     try {
@@ -86,7 +87,6 @@ export const DashboardScreen = () => {
     fetchInitialArticles();
   }, []);
 
-  // Maneja el filtro de la barra de categorías
   const handleCategoryPress = async (categoryId: string) => {
     setSelectedCategory(categoryId);
     setIsLoading(true);
@@ -97,21 +97,22 @@ export const DashboardScreen = () => {
       console.error("Error fetching articles by category:", error);
     }
     setIsLoading(false);
-  };
+};
 
-  const handleTypePress = async (typeId: string) => {
+const handleTypePress = async (typeId: string) => {
+    setSelectedTypeCategory(typeId);
     setIsLoading(true);
     try {
-      const filteredArticles = await fetchTipoById(typeId);
-      setArticles(filteredArticles);
-      if(filteredArticles.length === 0){
-        Alert.alert('Aviso', 'No se encontraron consejos para este tipo de mascota')
-      }
+        const filteredArticles = await fetchTipoById(typeId);
+        setArticles(filteredArticles);
+        if(filteredArticles.length === 0){
+            Alert.alert('Aviso', 'No se encontraron consejos para este tipo de mascota');
+        }
     } catch (error) {
-      console.error("Error fetching articles by type:", error);
+        console.error("Error fetching articles by type:", error);
     }
     setIsLoading(false);
-  };
+};
 
   const handleSearch = async () => {
     const searchQuery = searchTerm.trim().toLowerCase();
@@ -158,6 +159,10 @@ export const DashboardScreen = () => {
   };
 
   return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
     <SafeAreaView className='flex-1'>
       <View className="pl-6 pt-5 flex-row items-center justify-between pr-6">
         <Text className='text-2xl'>
@@ -216,7 +221,10 @@ export const DashboardScreen = () => {
       </View>
 
       <View>
-        <CardCategory onCategoryPress={handleTypePress} />
+        <CardCategory 
+        onCategoryPress={handleTypePress} 
+        selectedCategory={selectedTypeCategory} 
+        />
       </View>
 
       <ScrollView className='flex-grow pb-5'>
@@ -237,5 +245,7 @@ export const DashboardScreen = () => {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </KeyboardAvoidingView>
+
   );
 };

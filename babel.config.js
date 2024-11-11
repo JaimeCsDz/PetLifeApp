@@ -5,6 +5,7 @@ module.exports = function(api) {
     plugins: [
       "module:react-native-dotenv",
       "nativewind/babel",
+      'react-native-reanimated/plugin',
     ],
     env: {
       production: {

@@ -10,22 +10,21 @@ import { IVacunas } from '../../../interfaces/vacunas/IVacunas';
 import { IEstatus } from '../../../interfaces/vacunas/IEstatus';
 import { IVacunaTipo } from '../../../interfaces/vacunas/IVacunaTipo';
 import { useAuthStore } from '../../../store/useAuthStore';
-import { getMascotasByUserId } from '../../../actions/profile/profile';
+import { getMascotasByUserId, updateVacuna } from '../../../actions/profile/profile';
 import { IMascotas } from '../../../interfaces/Mascota/IMascota';
 
 interface VacunaModalProps {
     visible: boolean;
     onDismiss: () => void;
     onRefresh: () => void;
+    vacunaSeleccionada?: IVacunas | null; 
 }
 
-export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, onRefresh }) => {
+export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, onRefresh, vacunaSeleccionada }) => {
     const [vacuna, setVacuna] = useState('');
     const [vacunaId, setVacunaId] = useState('');
     const [visibleVacuna, setVisibleVacuna] = useState(false);
-    
-    const [notas, setNotas] = useState('');
-    
+
     const [mascota, setMascota] = useState('');
     const [visibleMascota, setVisibleMascota] = useState(false);
 
@@ -35,7 +34,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
     const [selectedStatusId, setSelectedStatusId] = useState<string>('');
 
     const [selectedDate, setSelectedDate] = useState('');
-    const [time, setTime] = useState(new Date());
+    const [time, setTime] = useState<Date | null>(null);
     const [showTimePicker, setShowTimePicker] = useState(false);
 
     const [especie, setEspecie] = useState<ITipoMascota[]>([]);
@@ -50,37 +49,19 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const response = await getTipoMascota();
-                if (response.length > 0) {
-                    setEspecie(response);
-                } else {
-                    Alert.alert("Error", "No se encontraron tipos de mascotas");
-                }
-            } catch (error) {
-                Alert.alert('Error', 'Ocurrió un error al cargar los datos');
-            }
+            const response = await getTipoMascota();
+            setEspecie(response);
         };
 
         const fetchEstatus = async () => {
-            try {
-                const estatusData = await getEstatus();
-                setEstatusList(estatusData);
-            } catch (error) {
-                Alert.alert("Error", "No se pudo obtener los estados.");
-                console.error("Error al obtener los estados:", error);
-            }
+            const estatusData = await getEstatus();
+            setEstatusList(estatusData);
         };
 
         const fetchMascotas = async () => {
-            try {
-                if (userId) {
-                    const mascotasData = await getMascotasByUserId(userId);
-                    setMascotas(mascotasData.data || []);
-                }
-            } catch (error) {
-                Alert.alert("Error", "No se pudo obtener las mascotas del usuario.");
-                console.error("Error al obtener las mascotas:", error);
+            if (userId) {
+                const mascotasData = await getMascotasByUserId(userId);
+                setMascotas(mascotasData.data || []);
             }
         };
 
@@ -91,82 +72,106 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
 
     useEffect(() => {
         const fetchVacunas = async () => {
-            try {
-                if (selectedEspecieId) {
-                    const vacunasData = await geVacunasTipoMascota(selectedEspecieId);
-                    setVacunas(vacunasData);
+            if (selectedEspecieId) {
+                const vacunasData = await geVacunasTipoMascota(selectedEspecieId);
+                setVacunas(vacunasData);
+                
+                if (!vacunaSeleccionada || selectedEspecieId !== vacunaSeleccionada.idVacunasTipoMascota) {
                     setVacuna('');
+                    setVacunaId('');
                 }
-            } catch (error) {
-                Alert.alert("Error", "No se pudieron obtener las vacunas para la especie seleccionada.");
-                console.error("Error al obtener las vacunas:", error);
             }
         };
 
         fetchVacunas();
-    }, [selectedEspecie]);
+    }, [selectedEspecieId, vacunaSeleccionada]);
 
-    const onChangeTime = (event: any, selectedTime: any) => {
-        const currentTime = selectedTime || time;
-        setShowTimePicker(Platform.OS === 'ios');
-        setTime(currentTime);
+    useEffect(() => {
+        if (vacunaSeleccionada) {
+            setVacuna(vacunaSeleccionada.nombreVacuna);
+            setSelectedDate(vacunaSeleccionada.fechaAplicacion);
+            
+            const horaAplicacion = new Date(`1970-01-01T${vacunaSeleccionada.horaAplicacion}`);
+            setTime(isNaN(horaAplicacion.getTime()) ? new Date() : horaAplicacion);
+
+            setSelectedStatusId(vacunaSeleccionada.idStatus);
+            setSelectedStatus(estatusList.find((estatus) => estatus.id === vacunaSeleccionada.idStatus)?.estatus || '');
+            setVacunaId(vacunaSeleccionada.idVacunasTipoMascota);
+            setMascota(mascotas.find((m) => m.id === vacunaSeleccionada.idMascota)?.nombreMascota || '');
+            setSelectedEspecieId(vacunaSeleccionada.idVacunasTipoMascota);
+        } else {
+            resetFields();
+        }
+    }, [vacunaSeleccionada, estatusList, mascotas]);
+
+    const resetFields = () => {
+        setVacuna('');
+        setVacunaId('');
+        setSelectedDate('');
+        setTime(new Date());
+        setSelectedStatus('');
+        setSelectedStatusId('');
+        setMascota('');
     };
 
-    const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    const onChangeTime = (event: any, selectedTime: Date | undefined) => {
+        if (selectedTime) {
+            setTime(selectedTime);
+        }
+        setShowTimePicker(false);
+    };
+
+    const formattedTime = time ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '';
 
     const handleGuardar = async () => {
         if (!mascota || !vacuna || !selectedDate || !selectedStatus) {
             Alert.alert("Error", "Por favor, completa todos los campos requeridos.");
             return;
         }
-    
-        const idMascota = mascotas.find(mascotas => mascotas.nombreMascota === mascota)?.id || '';
-    
-        const vacunaSeleccionada = vacunas.find(vacunas => vacunas.id === vacunaId);
-        const idVacunasTipoMascota = vacunaSeleccionada ? vacunaSeleccionada.id : '';
-    
-        if (!idMascota) {
-            Alert.alert("Error", "Por favor, selecciona una mascota válida.");
-            return;
-        }
-        if (!idVacunasTipoMascota) {
-            Alert.alert("Error", "Por favor, selecciona una vacuna válida.");
-            return;
-        }
-    
+
+        const idMascota = mascotas.find(m => m.nombreMascota === mascota)?.id || '';
+        const idVacunasTipoMascota = vacunaId;
+
         const vacunaData: IVacunas = {
-            nombreVacuna: vacunaSeleccionada!.nombreVacuna,
+            id: vacunaSeleccionada ? vacunaSeleccionada.id : '',
+            nombreVacuna: vacuna,
             fechaAplicacion: new Date(selectedDate).toISOString(),
             horaAplicacion: formattedTime,
             idStatus: selectedStatusId,
             idMascota: idMascota,
             idVacunasTipoMascota: idVacunasTipoMascota,
         };
-    
-        console.log('Datos a enviar:', vacunaData);
-    
+
         try {
-            const response = await PostVacunasMascora(vacunaData);
-            if (response.isSuccess) {
-                Alert.alert("Éxito", "Vacuna registrada con éxito");
-                onRefresh()
-                onDismiss();
+            if (vacunaSeleccionada) {
+                const response = await updateVacuna(vacunaSeleccionada.id!, vacunaData);
+                console.log('datos a mandar: ', vacunaData)
+                if (response) {
+                    Alert.alert("Éxito", "Vacuna actualizada con éxito");
+                } else {
+                    Alert.alert("Error", "No se pudo actualizar la vacuna");
+                }
             } else {
-                Alert.alert("Error", response.message || "No se pudo registrar la vacuna");
+                const response = await PostVacunasMascora(vacunaData);
+                if (response.isSuccess) {
+                    Alert.alert("Éxito", "Vacuna registrada con éxito");
+                } else {
+                    Alert.alert("Error", response.message || "No se pudo registrar la vacuna");
+                }
             }
+            onRefresh();
+            onDismiss();
         } catch (error) {
-            console.error("Error al registrar la vacuna:", error);
-            Alert.alert("Error", "Hubo un problema al registrar la vacuna");
+            console.error("Error al guardar la vacuna:", error);
+            Alert.alert("Error", "Hubo un problema al guardar la vacuna");
         }
     };
-    
-        
 
     return (
         <Portal>
             <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.modalContainer}>
                 <ScrollView>
-                    <Text style={styles.modalTitle}>Agregar vacuna</Text>
+                    <Text style={styles.modalTitle}>{vacunaSeleccionada ? 'Editar Vacuna' : 'Agregar Vacuna'}</Text>
                     <View style={styles.contenedor2}>
                         <Text style={styles.label}>Especie</Text>
                         <Menu
@@ -190,7 +195,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                                     key={item.id}
                                     onPress={() => {
                                         setSelectedEspecie(item.tipo);
-                                        setSelectedEspecieId(item.id)
+                                        setSelectedEspecieId(item.id);
                                         setVisibleEspecie(false);
                                     }}
                                     title={item.tipo}
@@ -249,7 +254,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                                     key={item.id}
                                     onPress={() => {
                                         setVacuna(item.nombreVacuna);
-                                        setVacunaId(item.id)
+                                        setVacunaId(item.id);
                                         setVisibleVacuna(false);
                                     }}
                                     title={item.nombreVacuna}
@@ -281,10 +286,10 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                         </View>
 
                         {showTimePicker && (
-                            <DateTimePicker value={time} mode="time" display="default" onChange={onChangeTime} />
+                            <DateTimePicker value={time || new Date()} mode="time" display="default" onChange={onChangeTime} />
                         )}
 
-                        <Text style={styles.label}>Status</Text>
+                        <Text style={styles.label}>Estatus</Text>
                         <Menu
                             visible={visibleStatus}
                             onDismiss={() => setVisibleStatus(false)}
@@ -306,7 +311,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
                                     key={item.id}
                                     onPress={() => {
                                         setSelectedStatus(item.estatus);
-                                        setSelectedStatusId(item.id)
+                                        setSelectedStatusId(item.id);
                                         setVisibleStatus(false);
                                     }}
                                     title={item.estatus}
@@ -327,6 +332,7 @@ export const VacunaModal: React.FC<VacunaModalProps> = ({ visible, onDismiss, on
         </Portal>
     );
 };
+
 
 const styles = StyleSheet.create({
     modalContainer: {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, FlatList, StyleSheet, Image, NativeSyntheticEvent, NativeScrollEvent, Platform, StatusBar, Alert } from "react-native";
+import { View, FlatList, StyleSheet, Image, NativeSyntheticEvent, NativeScrollEvent, Platform, StatusBar, Alert } from "react-native";
 import { Button, Text, Card, Avatar } from 'react-native-paper';
 import { NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -57,9 +57,9 @@ export const Citas = ({ visible }: any) => {
     );
 
     const renderCita = ({ item }: any) => (
-        <View className="justify-center items-center flex-1 bg-white">
-            <Card style={styles.card} className="m-2.5 p-2.5 rounded-2xl h-44 w-[90%]">
-                <View className="flex-row justify-between items-center p-2">
+        <View style={styles.cardContainer}>
+            <Card style={styles.card}>
+                <View style={styles.cardContent}>
                     <View style={styles.cardLeft}>
                         <Text style={styles.motivoText} numberOfLines={1} ellipsizeMode="tail">{item.motivoCita}</Text>
                         <View style={styles.detailRow}>
@@ -67,12 +67,12 @@ export const Citas = ({ visible }: any) => {
                             <Text style={styles.detailText}>{item.nombreMascota}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Icon name="map-marker" size={16} color="#656464" />
+                            <Icon name="clock" size={16} color="#656464" />
                             <Text style={styles.detailText}>{item.hora}</Text>
                         </View>
                         <View style={styles.detailRow}>
                             <Icon name="calendar" size={16} color="#656464" />
-                            <Text style={styles.detailText}>{item.fecha}</Text>
+                            <Text style={styles.detailText}>{item.fecha ? item.fecha.split("T")[0]: 'Fecha no disponible'}</Text>
                         </View>
                         <View style={styles.detailRow}>
                             <Icon name="hospital-building" size={16} color="#656464" />
@@ -107,7 +107,7 @@ export const Citas = ({ visible }: any) => {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
+        <View style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
             {citas.length === 0 ? (
                 <View style={styles.container}>
                     <Image source={require("../../../assets/dog-gum.png")} style={styles.image} />
@@ -148,14 +148,29 @@ export const Citas = ({ visible }: any) => {
                     />
                 </>
             )}
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    cardContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1,
+        backgroundColor: '#fff',
+        width: '100%'
+    },
     card: {
         backgroundColor: '#fff',
         elevation: 2,
+        marginVertical: 8,
+        borderRadius: 10,
+        padding: 15,
+        width: '90%'
+    },
+    cardContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
     cardLeft: {
         flex: 3,
@@ -209,7 +224,7 @@ const styles = StyleSheet.create({
     },
     cardActions: {
         justifyContent: 'flex-end',
-        marginTop: -30,
+        marginTop: -25,
     },
     image: {
         height: 120,

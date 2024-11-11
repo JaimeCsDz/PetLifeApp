@@ -7,7 +7,6 @@ import { InicioScreen } from '../screens/inicio/InicioScreen';
 import { CodigoPostal } from '../screens/auth/CodigoPostalScreen';
 import { FormCitasScreen } from '../screens/citas/FormCitasScreen';
 import { DetailsCitasScreen } from '../screens/citas/DetailsCitasScreen';
-import { CategoryNewsScreen } from '../screens/dashboard/CategoryNewsScreen';
 import { FormMascota } from "../screens/perfil/FormMascota";
 
 export type RootStackParams = {
@@ -19,7 +18,6 @@ export type RootStackParams = {
     CodigoPostal: undefined;
     FormCitasScreen: undefined;
     FormMascota: undefined;
-    CategoryNewsScreen: {category:string};
     DetailsCitasScreen: {cita: any};
 };
 
@@ -44,7 +42,6 @@ export const StackNavigator = () => {
         <Stack.Screen name="CodigoPostal" component={CodigoPostal} />
         <Stack.Screen name="FormCitasScreen" component={FormCitasScreen}/>
         <Stack.Screen name="DetailsCitasScreen" component={DetailsCitasScreen}/>
-        <Stack.Screen name="CategoryNewsScreen" component={CategoryNewsScreen}/>
         <Stack.Screen name="FormMascota" component={FormMascota}/>
         </Stack.Navigator>
     );

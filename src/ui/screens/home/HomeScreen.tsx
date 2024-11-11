@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { BottomNavigation } from "react-native-paper";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { DashboardScreen } from "../dashboard/DashboardScreen";
 import { MapsScreen } from "../maps/MapsScreen";
@@ -34,42 +34,47 @@ export const HomeScreen = () => {
   });
 
   return (
-    <View style={styles.container}>
-      <BottomNavigation
-        barStyle={styles.bottomBar}
-        navigationState={{ index, routes }}
-        onIndexChange={setIndex}
-        renderScene={renderScene}
-        renderIcon={({ route, focused }) => (
-          <View
-            style={[
-              styles.iconContainer,
-              route.key === "mapa" ? styles.circleIcon : null,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name={focused ? route.focusedIcon : route.unfocusedIcon}
-              color={route.key === "mapa" ? "#FFFFFF" : (focused ? "#037972" : "#A2A2A2")}
-              size={focused ? 28 : 24}
-            />
-          </View>
-        )}
-        activeColor="#037972"
-        inactiveColor="#A2A2A2"
-      />
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <View style={styles.container}>
+        <BottomNavigation
+          barStyle={styles.bottomBar}
+          navigationState={{ index, routes }}
+          onIndexChange={setIndex}
+          renderScene={renderScene}
+          renderIcon={({ route, focused }) => (
+            <View
+              style={[
+                styles.iconContainer,
+                route.key === "mapa" ? styles.circleIcon : null,
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={focused ? route.focusedIcon : route.unfocusedIcon}
+                color={route.key === "mapa" ? "#FFFFFF" : (focused ? "#037972" : "#A2A2A2")}
+                size={focused ? 28 : 24}
+              />
+            </View>
+          )}
+          activeColor="#037972"
+          inactiveColor="#A2A2A2"
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "flex-end",
   },
   bottomBar: {
     backgroundColor: "#F6F6F6",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -78,10 +83,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
-    position: 'static',
-    zIndex: 0,
     height: 80,
     paddingBottom: 20,
+    zIndex: 10,
   },
   iconContainer: {
     alignItems: "center",
@@ -97,6 +101,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 5,
     borderColor: "#ffff",
-    zIndex: 1,
+    zIndex: 20,
   },
 });

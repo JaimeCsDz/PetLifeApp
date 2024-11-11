@@ -18,33 +18,31 @@ export const MapsScreen = () => {
     const [searchText, setSearchText] = React.useState('');
     const mapRef = React.useRef<MapView | null>(null);
 
-    useFocusEffect(
-        React.useCallback(() => {
-            const getLocation = async () => {
-                let { status } = await Location.requestForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    alert('Permiso denegado');
-                    return;
-                }
-                let location = await Location.getCurrentPositionAsync();
-                const current: ICoordenadas = {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                };
-                setOrigin(current);
-                if (mapRef.current) {
-                    mapRef.current.animateToRegion({
-                        latitude: current.latitude,
-                        longitude: current.longitude,
-                        latitudeDelta: 0.04,
-                        longitudeDelta: 0.09,
-                    }, 1000);
-                }
+    React.useEffect(() => {
+        const getLocation = async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Permiso denegado');
+                return;
+            }
+            let location = await Location.getCurrentPositionAsync();
+            const current = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
             };
-
-            getLocation();
-        }, [])
-    );
+            setOrigin(current);
+            if (mapRef.current) {
+                mapRef.current.animateToRegion({
+                    latitude: current.latitude,
+                    longitude: current.longitude,
+                    latitudeDelta: 0.04,
+                    longitudeDelta: 0.09,
+                }, 1000);
+            }
+        };
+    
+        getLocation();
+    }, []);
 
     const getAutocompleteSuggestions = async (input: string) => {
         if (input.length > 2) { 

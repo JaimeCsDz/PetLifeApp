@@ -14,11 +14,21 @@ export const GetCitasById = async (id: string): Promise<{ data: ICitas[] }> => {
         console.log("respuesta", res.data);
         return res.data;
     } catch (error) {
-        Alert.alert("Error", "No se encontraron citas registradas");
+        console.log("Error", "No se encontraron citas registradas");
         return { data: [] };
     }
 };
 
+export const DeleteCita = async (id:string) => {
+    try {
+        const res= petLifeAPI.delete(`/Cita/Eliminar/${id}`)
+        return res
+    } catch (error) {
+        console.log('Error al eliminar la cita', error)
+        return []
+    }
+    
+}
 
 export const getVeterinarias = async () => {
     try {

@@ -5,6 +5,28 @@ import { IGenero } from '../../interfaces/Mascota/IGenero';
 import { IRaza } from '../../interfaces/Mascota/IRaza';
 import { ITipoMascota } from '../../interfaces/Mascota/ITipoMascota';
 import { AxiosError } from 'axios';
+import { IVacunas } from '../../interfaces/vacunas/IVacunas';
+
+
+export const updateVacuna = async (id: string, vacunaData: IVacunas) => {
+    try {
+        const res = await petLifeAPI.put(`/Vacunas/${id}`, vacunaData);
+        return res.data;
+    } catch (error) {
+        console.log("Error al actualizar la vacuna", error);
+        return null;
+    }
+};
+
+export const deleteVacuna = async (id:string) => {
+    try {
+        const res = await petLifeAPI.delete(`/Vacunas/${id}`)
+        return res
+    } catch (error) {
+        console.log("Error al eliminar la vacuna")
+        return []
+    }
+}
 
 export const getMascotasByUserId = async (userId: string): Promise<{ data: IMascotas[]; isSuccess: boolean; message: string | null }> => {
     try {
