@@ -54,7 +54,7 @@ export const VacunasScreen = ({ showAllVacunas, setShowAllVacunas, refreshData }
             fetchData();
             fetchEstatus();
         }
-    }, [mascotaId]);
+    }, [mascotaId, refreshData]);
 
     const closeModal = () => {
         setShowAllVacunas(false);
@@ -65,7 +65,29 @@ export const VacunasScreen = ({ showAllVacunas, setShowAllVacunas, refreshData }
         return estatus ? estatus.estatus : "Desconocido";
     };
 
-    const ultimasVacunas = vacunas.slice(-3);
+const obtenerTimestamp = (fecha: any, hora: any) => {
+    const horaConvertida = (hora ? hora : "12:00 AM").replace(' p. m.', 'PM').replace(' a. m.', 'AM');
+    return new Date(`${fecha} ${horaConvertida}`).getTime();
+};
+
+
+const ultimasVacunas = [...vacunas]
+    .sort((a, b) => {
+        const timestampA = obtenerTimestamp(a.fechaAplicacion, a.horaAplicacion);
+        const timestampB = obtenerTimestamp(b.fechaAplicacion, b.horaAplicacion);
+
+        if (timestampB !== timestampA) {
+            return timestampB - timestampA;
+        }
+
+        return b.id!.localeCompare(a.id!);
+    })
+    .slice(0, 3);
+
+console.log("Últimas tres vacunas ordenadas:", ultimasVacunas);
+
+
+
 
     const handleEdit = async(item: IVacunas) => {
         setSelectedVacuna(item);

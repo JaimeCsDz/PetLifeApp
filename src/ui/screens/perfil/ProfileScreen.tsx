@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, SafeAreaView, View, Text, Image, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Appbar, Card, Button, Menu, Divider, List } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -45,6 +46,14 @@ export const ProfileScreen = () => {
         setShowAllVacunas(true);         
         closeVacunaMenu();
     };
+
+
+useFocusEffect(
+    React.useCallback(() => {
+        refreshData();
+    }, [userId, mascotaActiva])
+);
+
 
     const handleLogOut = () => {
         setMascotas([]);
@@ -345,7 +354,7 @@ const styles = StyleSheet.create({
     vacunas: {   
         width: '90%',
         marginTop: 10,
-        height: 'auto',
+        marginBottom: 70
     },
     contenedor: {
         flexDirection: 'row',

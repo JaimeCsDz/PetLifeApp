@@ -147,6 +147,7 @@ const handleTypePress = async (typeId: string) => {
     setIsLoading(true);
     setSearchTerm('');
     setSelectedCategory('');
+    setSelectedTypeCategory('')
     
     try {
       const response = await fetchNoticiasMascotas();

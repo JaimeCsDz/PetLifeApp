@@ -92,7 +92,7 @@ export const ResourceScreen = () => {
                         </Menu>
                     </View>
                 </View>
-                <ScrollView>
+                <ScrollView className="mb-20">
                     <CardResource data={filteredData} />
                 </ScrollView>
             </SafeAreaView>
