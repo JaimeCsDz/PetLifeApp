@@ -122,7 +122,7 @@ export const Citas = ({ visible }: any) => {
                         data={citas}
                         renderItem={renderCita}
                         keyExtractor={(item) => item.id!.toString()}
-                        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+                        contentContainerStyle={{ flexGrow: 1, paddingBottom: 90}}
                         ListHeaderComponent={
                             <View style={styles.headerContainer}>
                                 <Text style={styles.headerTitle}>Agregar Cita</Text>
@@ -134,18 +134,25 @@ export const Citas = ({ visible }: any) => {
                         refreshing={refreshing}
                         onRefresh={onRefresh}
                     />
+                    <View style={{ right: 1, bottom: 16 }}>
                     <AnimatedFAB
                         icon={'plus'}
                         label={'Agregar cita'}
                         color="#fff"
                         extended={isExtended}
-                        onPress={() => navigation.navigate("FormCitasScreen")}
+                        onPress={() => navigation.navigate('FormCitasScreen')}
                         visible={visible}
                         animateFrom={'right'}
                         iconMode={'dynamic'}
-                        pointerEvents={isExtended ? 'auto' : 'box-none'}
-                        style={styles.fabStyle}
+                        style={{
+                            position: 'absolute',
+                            right: 16,
+                            bottom: 80,
+                            backgroundColor: '#037972',
+                            zIndex: 1000,
+                        }}
                     />
+                    </View>
                 </>
             )}
         </View>
@@ -235,7 +242,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        position: 'relative',
     },
     text: {
         fontWeight: 'semibold',

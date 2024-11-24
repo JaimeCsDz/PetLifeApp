@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as Location from 'expo-location';
-import { SafeAreaView, StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Keyboard } from "react-native";
+import { SafeAreaView, StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Keyboard, Alert } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -9,7 +9,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import { ICoordenadas } from '../../../interfaces/Coordenadas';
 import { ISuggestion } from '../../../interfaces/Suggestion';
 import { useFocusEffect } from '@react-navigation/native';
-
+import { useCallback } from 'react';
 export const MapsScreen = () => {
     const [origin, setOrigin] = React.useState<ICoordenadas | null>(null);
     const [destination, setDestination] = React.useState<ICoordenadas | null>(null);
@@ -18,31 +18,55 @@ export const MapsScreen = () => {
     const [searchText, setSearchText] = React.useState('');
     const mapRef = React.useRef<MapView | null>(null);
 
-    React.useEffect(() => {
-        const getLocation = async () => {
+    const getLocation = async () => {
+        try {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                alert('Permiso denegado');
+                Alert.alert(
+                    'Permiso necesario',
+                    'La aplicación necesita acceso a tu ubicación para funcionar correctamente.',
+                    [
+                        { text: 'Cancelar', style: 'cancel' },
+                        { text: 'Intentar de nuevo', onPress: () => getLocation() },
+                    ]
+                );
                 return;
             }
+
+            const isLocationEnabled = await Location.hasServicesEnabledAsync();
+            if (!isLocationEnabled) {
+                Alert.alert(
+                    'Servicios de ubicación desactivados',
+                    'Por favor, activa los servicios de ubicación en tu dispositivo.',
+                    [
+                        { text: 'Cancelar', style: 'cancel' },
+                        { text: 'Abrir configuración', onPress: () => Location.enableNetworkProviderAsync() },
+                    ]
+                );
+                return;
+            }
+
             let location = await Location.getCurrentPositionAsync();
-            const current = {
+            setOrigin({
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
-            };
-            setOrigin(current);
-            if (mapRef.current) {
-                mapRef.current.animateToRegion({
-                    latitude: current.latitude,
-                    longitude: current.longitude,
-                    latitudeDelta: 0.04,
-                    longitudeDelta: 0.09,
-                }, 1000);
-            }
-        };
-    
-        getLocation();
-    }, []);
+            });
+        } catch (error) {
+            console.error('Error obteniendo la ubicación:', error);
+            Alert.alert(
+                'Error',
+                'No se pudo obtener la ubicación. Por favor, verifica los permisos y servicios de ubicación.'
+            );
+        }
+    };
+
+    // Usa `useFocusEffect` para verificar permisos cada vez que el tab esté activo
+    useFocusEffect(
+        useCallback(() => {
+            getLocation();
+        }, [])
+    );
+        
 
     const getAutocompleteSuggestions = async (input: string) => {
         if (input.length > 2) { 
@@ -163,6 +187,7 @@ export const MapsScreen = () => {
                     longitudeDelta: 0.09,
                 }}
                 style={styles.map}
+                onPress={() => setDestination(null)}
             >
                 {/* Marcador de la ubicación del usuario */}
                 {origin && (

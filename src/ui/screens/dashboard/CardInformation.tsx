@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
         padding: 10,
         justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 80,
     },
     card: {
         borderRadius: 20,

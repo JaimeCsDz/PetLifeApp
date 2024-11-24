@@ -231,8 +231,7 @@ const handleTypePress = async (typeId: string) => {
       <ScrollView className='flex-grow pb-5'>
         <View className='flex-row justify-between align-middle pl-5 pr-5 pt-3'>
           <View className='flex-row align-middle'>
-            <Text className='font-bold underline'>Reciente</Text>
-            <Text className='text-gray-500 ml-3'>Popular</Text>
+            <Text className='font-bold underline'>Noticias</Text>
           </View>
           <Text className='text-blue-600' onPress={handleResetFilters}>Ver todo</Text>
         </View>
