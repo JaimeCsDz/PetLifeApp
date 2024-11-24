@@ -8,7 +8,7 @@ export const data = [
         title: 'Protección animal',
         description: 'Organización de protección de animales en Cancún',
         label: 'Gobierno',
-        image: require('../../../assets/descarga.jpg'),
+        image: require('../../../assets/descarga1.jpg'),
         telefono: 9984815254,
         url: 'https://www.facebook.com/DireccionProteccionBienestarAnimal/?locale=es_LA'
     },
